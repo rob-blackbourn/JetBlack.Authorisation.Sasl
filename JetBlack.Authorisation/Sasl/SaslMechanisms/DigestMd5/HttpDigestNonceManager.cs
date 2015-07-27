@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 
-namespace JetBlack.Authorisation
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.DigestMd5
 {
     /// <summary>
     /// HTTP digest authentication nonce manager.

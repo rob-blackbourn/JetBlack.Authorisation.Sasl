@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-using JetBlack.Authorisation.Utils;
-using System;
 using System.Text;
+using JetBlack.Authorisation.Utils;
 
-namespace JetBlack.Authorisation
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.DigestMd5
 {
     /// <summary>
     /// This class represents SASL DIGEST-MD5 authentication <b>digest-response</b>. Defined in RFC 2831.

@@ -1,8 +1,8 @@
-﻿using JetBlack.Authorisation.Utils;
-using System;
+﻿using System;
 using System.Text;
+using JetBlack.Authorisation.Utils;
 
-namespace JetBlack.Authorisation
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.DigestMd5
 {
     /// <summary>
     /// Implements http digest access authentication. Defined in RFC 2617.

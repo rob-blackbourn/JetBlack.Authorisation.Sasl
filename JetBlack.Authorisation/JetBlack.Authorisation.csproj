@@ -52,9 +52,9 @@
     <Compile Include="Sasl\SaslMechanisms\XoAuth2\XoAuth2SaslMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\XoAuth\XoAuthSaslMechanism.cs" />
     <Compile Include="UserInfoEventArgs.cs" />
-    <Compile Include="GmailOAuth1.cs" />
-    <Compile Include="HttpDigest.cs" />
-    <Compile Include="HttpDigestNonceManager.cs" />
+    <Compile Include="Sasl\SaslMechanisms\XoAuth\GmailOAuth1.cs" />
+    <Compile Include="Sasl\SaslMechanisms\DigestMd5\HttpDigest.cs" />
+    <Compile Include="Sasl\SaslMechanisms\DigestMd5\HttpDigestNonceManager.cs" />
     <Compile Include="Sasl\ISaslClientMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\CramMd5\CramMd5SaslClientMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\DigestMd5\DigestMd5SaslClientMechanism.cs" />
@@ -63,8 +63,8 @@
     <Compile Include="Sasl\SaslMechanisms\Plain\PlainSaslClientMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\XoAuth\XoAuthSaslClientMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\XoAuth2\XoAuth2SaslClientMechanism.cs" />
-    <Compile Include="DigestMd5Challenge.cs" />
-    <Compile Include="DigestMd5Response.cs" />
+    <Compile Include="Sasl\SaslMechanisms\DigestMd5\DigestMd5Challenge.cs" />
+    <Compile Include="Sasl\SaslMechanisms\DigestMd5\DigestMd5Response.cs" />
     <Compile Include="Sasl\ISaslServerMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\CramMd5\CramMd5SaslServerMechanism.cs" />
     <Compile Include="Sasl\SaslMechanisms\DigestMd5\DigestMd5ServerMechanism_.cs" />

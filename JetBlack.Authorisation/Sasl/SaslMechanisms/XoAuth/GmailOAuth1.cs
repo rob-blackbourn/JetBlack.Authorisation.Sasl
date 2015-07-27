@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
-namespace JetBlack.Authorisation
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.XoAuth
 {
     /// <summary>
     /// This class implements Google Gmail OAUTH version 1.0.
