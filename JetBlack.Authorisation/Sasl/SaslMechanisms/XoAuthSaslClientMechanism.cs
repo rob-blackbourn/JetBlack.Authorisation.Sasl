@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// This class implements <b>XOAUTH</b> authentication.
     /// </summary>
-    public class SaslClientXoAuth : SaslClientMechanism
+    public class XoAuthSaslClientMechanism : SaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _authString;
@@ -20,7 +20,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <param name="authString">OAUTH authentication string. For example you can use <see cref="GmailOAuth1.GetXoAuthStringForImap"/> to get valid string.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>authString</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
-        public SaslClientXoAuth(string userName, string authString)
+        public XoAuthSaslClientMechanism(string userName, string authString)
         {
             if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'userName' value must be specified.", "userName");

@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "PLAIN" authenticaiton.
     /// </summary>
-    public class SaslClientPlain : SaslClientMechanism
+    public class PlainSaslClientMechanism : SaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _password;
@@ -21,7 +21,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <param name="password">User password.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>password</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public SaslClientPlain(string userName, string password)
+        public PlainSaslClientMechanism(string userName, string password)
         {
             if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'username' value must be specified.", "userName");

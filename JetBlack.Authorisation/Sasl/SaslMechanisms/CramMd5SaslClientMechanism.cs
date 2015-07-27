@@ -8,7 +8,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "CRAM-MD5" authenticaiton.
     /// </summary>
-    public class SaslClientCramMd5 : SaslClientMechanism
+    public class CramMd5SaslClientMechanism : SaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _password;
@@ -22,7 +22,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <param name="password">User password.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>password</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public SaslClientCramMd5(string userName, string password)
+        public CramMd5SaslClientMechanism(string userName, string password)
         {
             if (userName == null)
                 throw new ArgumentNullException("userName");
