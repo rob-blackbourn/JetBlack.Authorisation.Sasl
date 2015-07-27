@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton.
     /// </summary>
-    public class ClientDigestMd5 : ClientMechanism
+    public class SaslClientDigestMd5 : SaslClientMechanism
     {
         private readonly string _protocol;
         private readonly string _serverName;
@@ -25,7 +25,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <param name="password">User password.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>protocol</b>,<b>server</b>,<b>userName</b> or <b>password</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public ClientDigestMd5(string protocol, string server, string userName, string password)
+        public SaslClientDigestMd5(string protocol, string server, string userName, string password)
         {
             if (protocol == null)
                 throw new ArgumentNullException("protocol");

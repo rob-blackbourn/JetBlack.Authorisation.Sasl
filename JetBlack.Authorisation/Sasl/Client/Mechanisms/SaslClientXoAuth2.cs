@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// <summary>
     /// This class implements <b>XOAUTH2</b> authentication.
     /// </summary>
-    public class ClientXoAuth2 : ClientMechanism
+    public class SaslClientXoAuth2 : SaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _accessToken;
@@ -20,7 +20,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <param name="accessToken">The access Token.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>accessToken</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public ClientXoAuth2(string userName, string accessToken)
+        public SaslClientXoAuth2(string userName, string accessToken)
         {
             if (string.IsNullOrEmpty(userName))
             {

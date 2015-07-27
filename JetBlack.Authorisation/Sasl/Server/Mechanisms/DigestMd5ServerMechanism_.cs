@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton. Defined in RFC 2831.
     /// </summary>
-    public class DigestMd5ServerMechanism : ServerMechanism
+    public class DigestMd5SaslServerMechanism : SaslServerMechanism
     {
         private bool _isCompleted;
         private bool _isAuthenticated;
@@ -20,7 +20,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// Default constructor.
         /// </summary>
         /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
-        public DigestMd5ServerMechanism(bool requireSsl)
+        public DigestMd5SaslServerMechanism(bool requireSsl)
         {
             _requireSsl = requireSsl;
             _nonce = HttpDigest.CreateNonce();

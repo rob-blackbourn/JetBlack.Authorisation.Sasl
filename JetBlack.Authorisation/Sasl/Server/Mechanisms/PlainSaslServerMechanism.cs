@@ -4,24 +4,22 @@ using System.Text;
 namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
 {
     /// <summary>
-    /// Implements "LOGIN" authenticaiton.
+    /// Implements "PLAIN" authenticaiton. Defined in RFC 4616.
     /// </summary>
-    public class LoginServerMechanism : ServerMechanism
+    public class PlainSaslServerMechanism : SaslServerMechanism
     {
-        private bool _isCompleted;
-        private bool _isAuthenticated;
-        private readonly bool _requireSsl;
-        private string _userName;
-        private string _password;
-        private int _state;
+        private bool _isCompleted = false;
+        private bool _isAuthenticated = false;
+        private bool _requireSSL = false;
+        private string _userName = "";
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
-        public LoginServerMechanism(bool requireSsl)
+        /// <param name="requireSSL">Specifies if this mechanism is available to SSL connections only.</param>
+        public PlainSaslServerMechanism(bool requireSSL)
         {
-            _requireSsl = requireSsl;
+            _requireSSL = requireSSL;
         }
 
         /// <summary>
@@ -31,56 +29,53 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         {
             _isCompleted = false;
             _isAuthenticated = false;
-            _userName = null;
-            _password = null;
-            _state = 0;
+            _userName = "";
         }
 
         /// <summary>
         /// Continues authentication process.
         /// </summary>
         /// <param name="clientResponse">Client sent SASL response.</param>
-        /// <returns>Returns challange response what must be sent to client or null if authentication has completed.</returns>
+        /// <returns>Retunrns challange response what must be sent to client or null if authentication has completed.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>clientResponse</b> is null reference.</exception>
         /// <remarks>
-        /// RFC none.
-        ///    S: "Username:"
-        ///    C: userName
-        ///    S: "Password:"
-        ///    C: password
+        /// RFC 4616.2. PLAIN SASL Mechanism.                
+        /// The mechanism consists of a single message, a string of[UTF - 8]
+        /// encoded[Unicode] characters, from the client to the server.The
+        /// client presents the authorization identity(identity to act as),
+        /// followed by a NUL(U+0000) character, followed by the authentication
+        /// identity(identity whose password will be used), followed by a NUL
+        /// (U+0000) character, followed by the clear-text password.As with
+        /// other SASL mechanisms, the client does not provide an authorization
+        /// identity when it wishes the server to derive an identity from the
+        /// credentials and use that as the authorization identity.
         ///
-        /// NOTE: UserName may be included in initial client response.
+        /// message   = [authzid] UTF8NUL authcid UTF8NUL passwd
+        ///
+        /// Example:
+        ///     C: a002 AUTHENTICATE "PLAIN"
+        ///     S: + ""
+        ///     C: { 21}
+        ///     C: <NUL>tim<NUL> tanstaaftanstaaf
+        ///     S: a002 OK "Authenticated"
         /// </remarks>
         public override byte[] Continue(byte[] clientResponse)
         {
             if (clientResponse == null)
                 throw new ArgumentNullException("clientResponse");
 
-            // User name provided, so skip that state.
-            if (_state == 0 && clientResponse.Length > 0)
-                ++_state;
+            if (clientResponse.Length == 0)
+                return new byte[0];
 
-            if (_state == 0)
+            string[] authzid_authcid_passwd = Encoding.UTF8.GetString(clientResponse).Split('\0');
+            if (authzid_authcid_passwd.Length == 3 && !string.IsNullOrEmpty(authzid_authcid_passwd[1]))
             {
-                ++_state;
-
-                return Encoding.ASCII.GetBytes("UserName:");
-            }
-            else if (_state == 1)
-            {
-                ++_state;
-                _userName = Encoding.UTF8.GetString(clientResponse);
-
-                return Encoding.ASCII.GetBytes("Password:");
-            }
-            else
-            {
-                _password = Encoding.UTF8.GetString(clientResponse);
-
-                AuthenticateEventArgs result = OnAuthenticate("", _userName, _password);
+                _userName = authzid_authcid_passwd[1];
+                AuthenticateEventArgs result = OnAuthenticate(authzid_authcid_passwd[0], authzid_authcid_passwd[1], authzid_authcid_passwd[2]);
                 _isAuthenticated = result.IsAuthenticated;
-                _isCompleted = true;
             }
+
+            _isCompleted = true;
 
             return null;
         }
@@ -102,11 +97,11 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         }
 
         /// <summary>
-        /// Returns always "LOGIN".
+        /// Returns always "PLAIN".
         /// </summary>
         public override string Name
         {
-            get { return "LOGIN"; }
+            get { return "PLAIN"; }
         }
 
         /// <summary>
@@ -114,7 +109,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// </summary>
         public override bool RequireSSL
         {
-            get { return _requireSsl; }
+            get { return _requireSSL; }
         }
 
         /// <summary>
@@ -133,13 +128,13 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// <summary>
         /// Raises <b>Authenticate</b> event.
         /// </summary>
-        /// <param name="authorizationId">Authorization ID.</param>
+        /// <param name="authorizationID">Authorization ID.</param>
         /// <param name="userName">User name.</param>
         /// <param name="password">Password.</param>
         /// <returns>Returns authentication result.</returns>
-        private AuthenticateEventArgs OnAuthenticate(string authorizationId, string userName, string password)
+        private AuthenticateEventArgs OnAuthenticate(string authorizationID, string userName, string password)
         {
-            var retVal = new AuthenticateEventArgs(authorizationId, userName, password);
+            var retVal = new AuthenticateEventArgs(authorizationID, userName, password);
 
             if (Authenticate != null)
                 Authenticate(this, retVal);

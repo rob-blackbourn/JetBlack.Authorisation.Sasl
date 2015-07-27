@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace JetBlack.Authorisation.Sasl.Server
+namespace JetBlack.Authorisation.Sasl
 {
     /// <summary>
     /// This base class for server SASL authentication mechanisms.
     /// </summary>
-    public abstract class ServerMechanism
+    public abstract class SaslServerMechanism : SaslMechanism
     {
         private readonly Dictionary<string, object> _tags = null;
 
@@ -32,12 +32,6 @@ namespace JetBlack.Authorisation.Sasl.Server
         /// Gets if user has authenticated sucessfully.
         /// </summary>
         public abstract bool IsAuthenticated { get; }
-
-        /// <summary>
-        /// Gets IANA-registered SASL authentication mechanism name.
-        /// </summary>
-        /// <remarks>The registered list is available from: http://www.iana.org/assignments/sasl-mechanisms .</remarks>
-        public abstract string Name { get; }
 
         /// <summary>
         /// Gets if specified SASL mechanism is available only to SSL connection.

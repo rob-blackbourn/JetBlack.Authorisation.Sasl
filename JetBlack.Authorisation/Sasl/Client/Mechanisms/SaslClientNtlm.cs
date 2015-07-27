@@ -9,7 +9,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// <summary>
     /// Implements NTLM authentication.
     /// </summary>
-    public class ClientNtlm : ClientMechanism
+    public class SaslClientNtlm : SaslClientMechanism
     {
         /// <summary>
         /// This class represents NTLM type 1 message.
@@ -649,7 +649,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <param name="userName">User login name.</param>
         /// <param name="password">Password.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>domain</b>,<b>userName</b> or <b>passowrd</b> is null reference.</exception>
-        public ClientNtlm(string domain, string userName, string password)
+        public SaslClientNtlm(string domain, string userName, string password)
         {
             _userName = null;
             if (domain == null)

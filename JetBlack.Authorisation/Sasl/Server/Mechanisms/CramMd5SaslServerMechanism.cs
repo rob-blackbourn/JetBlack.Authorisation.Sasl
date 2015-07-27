@@ -8,7 +8,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
     /// <summary>
     /// Implements "CRAM-MD5" authenticaiton. Defined in RFC 2195.
     /// </summary>
-    public class CramMd5ServerMechanism : ServerMechanism
+    public class CramMd5SaslServerMechanism : SaslServerMechanism
     {
         private bool _isCompleted;
         private bool _isAuthenticated;
@@ -21,7 +21,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// Default constructor.
         /// </summary>
         /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
-        public CramMd5ServerMechanism(bool requireSsl)
+        public CramMd5SaslServerMechanism(bool requireSsl)
         {
             _requireSsl = requireSsl;
         }
