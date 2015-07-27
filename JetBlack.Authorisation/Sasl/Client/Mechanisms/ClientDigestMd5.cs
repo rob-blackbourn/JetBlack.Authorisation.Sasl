@@ -14,7 +14,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         private string _serverName = null;
         private string _userName = null;
         private string _password = null;
-        private AUTH_SASL_DigestMD5_Response _response = null;
+        private DigestMd5Response _response = null;
 
         /// <summary>
         /// Default constructor.
@@ -83,10 +83,10 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 ++_state;
 
                 // Parse server challenge.
-                var challenge = AUTH_SASL_DigestMD5_Challenge.Parse(Encoding.UTF8.GetString(serverResponse));
+                var challenge = DigestMd5Challenge.Parse(Encoding.UTF8.GetString(serverResponse));
 
                 // Construct our response to server challenge.
-                _response = new AUTH_SASL_DigestMD5_Response(
+                _response = new DigestMd5Response(
                     challenge,
                     challenge.Realm[0],
                     _userName,

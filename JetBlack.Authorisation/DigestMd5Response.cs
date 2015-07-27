@@ -7,9 +7,9 @@ namespace JetBlack.Authorisation
     /// <summary>
     /// This class represents SASL DIGEST-MD5 authentication <b>digest-response</b>. Defined in RFC 2831.
     /// </summary>
-    public class AUTH_SASL_DigestMD5_Response
+    public class DigestMd5Response
     {
-        private AUTH_SASL_DigestMD5_Challenge m_pChallenge = null;
+        private DigestMd5Challenge m_pChallenge = null;
         private string m_UserName = null;
         private string m_Password = null;
         private string m_Realm = null;
@@ -35,7 +35,7 @@ namespace JetBlack.Authorisation
         /// <param name="qop">Indicates what "quality of protection" the client accepted. This must be one value of the challenge QopOptions.</param>
         /// <param name="digestUri">Digest URI.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>challenge</b>,<b>realm</b>,<b>password</b>,<b>nonce</b>,<b>qop</b> or <b>digestUri</b> is null reference.</exception>
-        public AUTH_SASL_DigestMD5_Response(AUTH_SASL_DigestMD5_Challenge challenge, string realm, string userName, string password, string cnonce, int nonceCount, string qop, string digestUri)
+        public DigestMd5Response(DigestMd5Challenge challenge, string realm, string userName, string password, string cnonce, int nonceCount, string qop, string digestUri)
         {
             if (challenge == null)
             {
@@ -82,7 +82,7 @@ namespace JetBlack.Authorisation
         /// <summary>
         /// Internal parse constructor.
         /// </summary>
-        private AUTH_SASL_DigestMD5_Response()
+        private DigestMd5Response()
         {
         }
 
@@ -96,7 +96,7 @@ namespace JetBlack.Authorisation
         /// <returns>Returns DIGEST-MD5 response.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>digestResponse</b> isnull reference.</exception>
         /// <exception cref="ParseException">Is raised when response parsing + validation fails.</exception>
-        public static AUTH_SASL_DigestMD5_Response Parse(string digestResponse)
+        public static DigestMd5Response Parse(string digestResponse)
         {
             if (digestResponse == null)
             {
@@ -136,7 +136,7 @@ namespace JetBlack.Authorisation
                 authzid-value    = qdstr-val
             */
 
-            AUTH_SASL_DigestMD5_Response retVal = new AUTH_SASL_DigestMD5_Response();
+            DigestMd5Response retVal = new DigestMd5Response();
 
             // Set default values.
             retVal.m_Realm = "";

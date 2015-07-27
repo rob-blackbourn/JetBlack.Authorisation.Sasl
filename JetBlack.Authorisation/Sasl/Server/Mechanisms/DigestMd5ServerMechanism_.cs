@@ -23,7 +23,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         public DigestMd5ServerMechanism_(bool requireSSL)
         {
             _requireSSL = requireSSL;
-            _nonce = Auth_HttpDigest.CreateNonce();
+            _nonce = HttpDigest.CreateNonce();
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
             {
                 ++_state;
 
-                AUTH_SASL_DigestMD5_Challenge callenge = new AUTH_SASL_DigestMD5_Challenge(new string[] { _realm }, _nonce, new string[] { "auth" }, false);
+                DigestMd5Challenge callenge = new DigestMd5Challenge(new string[] { _realm }, _nonce, new string[] { "auth" }, false);
 
                 return Encoding.UTF8.GetBytes(callenge.ToChallenge());
             }
@@ -78,7 +78,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
 
                 try
                 {
-                    AUTH_SASL_DigestMD5_Response response = AUTH_SASL_DigestMD5_Response.Parse(Encoding.UTF8.GetString(clientResponse));
+                    DigestMd5Response response = DigestMd5Response.Parse(Encoding.UTF8.GetString(clientResponse));
 
                     // Check realm and nonce value.
                     if (_realm != response.Realm || _nonce != response.Nonce)

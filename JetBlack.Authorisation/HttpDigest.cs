@@ -7,7 +7,7 @@ namespace JetBlack.Authorisation
     /// <summary>
     /// Implements http digest access authentication. Defined in RFC 2617.
     /// </summary>
-    public class Auth_HttpDigest
+    public class HttpDigest
     {
         private string m_Method = "";
         private string m_Realm = "";
@@ -28,7 +28,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         /// <param name="digestResponse">Server/Client returned digest response.</param>
         /// <param name="requestMethod">Request method.</param>
-        public Auth_HttpDigest(string digestResponse, string requestMethod)
+        public HttpDigest(string digestResponse, string requestMethod)
         {
             m_Method = requestMethod;
 
@@ -44,7 +44,7 @@ namespace JetBlack.Authorisation
         /// <param name="uri">Request URI.</param>
         /// <param name="digestResponse">Server authenticate resposne.</param>
         /// <param name="requestMethod">Request method.</param>
-        public Auth_HttpDigest(string userName, string password, string cnonce, string uri, string digestResponse, string requestMethod)
+        public HttpDigest(string userName, string password, string cnonce, string uri, string digestResponse, string requestMethod)
         {
             Parse(digestResponse);
 
@@ -64,7 +64,7 @@ namespace JetBlack.Authorisation
         /// <param name="realm">Realm(domain).</param>
         /// <param name="nonce">Nonce value.</param>
         /// <param name="opaque">Opaque value.</param>
-        public Auth_HttpDigest(string realm, string nonce, string opaque)
+        public HttpDigest(string realm, string nonce, string opaque)
         {
             m_Realm = realm;
             m_Nonce = nonce;

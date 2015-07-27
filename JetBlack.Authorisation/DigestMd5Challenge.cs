@@ -7,7 +7,7 @@ namespace JetBlack.Authorisation
     /// <summary>
     /// This class represents SASL DIGEST-MD5 authentication <b>digest-challenge</b>. Defined in RFC 2831.
     /// </summary>
-    public class AUTH_SASL_DigestMD5_Challenge
+    public class DigestMd5Challenge
     {
         private string[] m_Realm = null;
         private string m_Nonce = null;
@@ -26,7 +26,7 @@ namespace JetBlack.Authorisation
         /// <param name="qopOptions">Quality of protections supported. Normally this is "auth".</param>
         /// <param name="stale">Stale value.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>realm</b>,<b>nonce</b> or <b>qopOptions</b> is null reference.</exception>
-        public AUTH_SASL_DigestMD5_Challenge(string[] realm, string nonce, string[] qopOptions, bool stale)
+        public DigestMd5Challenge(string[] realm, string nonce, string[] qopOptions, bool stale)
         {
             if (realm == null)
             {
@@ -52,7 +52,7 @@ namespace JetBlack.Authorisation
         /// <summary>
         /// Internal parse constructor.
         /// </summary>
-        private AUTH_SASL_DigestMD5_Challenge()
+        private DigestMd5Challenge()
         {
         }
 
@@ -66,14 +66,14 @@ namespace JetBlack.Authorisation
         /// <returns>Returns DIGEST-MD5 challenge.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>challenge</b> is null reference.</exception>
         /// <exception cref="ParseException">Is raised when challenge parsing + validation fails.</exception>
-        public static AUTH_SASL_DigestMD5_Challenge Parse(string challenge)
+        public static DigestMd5Challenge Parse(string challenge)
         {
             if (challenge == null)
             {
                 throw new ArgumentNullException("challenge");
             }
 
-            AUTH_SASL_DigestMD5_Challenge retVal = new AUTH_SASL_DigestMD5_Challenge();
+            DigestMd5Challenge retVal = new DigestMd5Challenge();
 
             string[] parameters = TextUtils.SplitQuotedString(challenge, ',');
             foreach (string parameter in parameters)

@@ -7,7 +7,7 @@ namespace JetBlack.Authorisation
     /// <summary>
     /// HTTP digest authentication nonce manager.
     /// </summary>
-    public class Auth_HttpDigest_NonceManager : IDisposable
+    public class HttpDigestNonceManager : IDisposable
     {
         #region class NonceEntry
 
@@ -61,7 +61,7 @@ namespace JetBlack.Authorisation
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public Auth_HttpDigest_NonceManager()
+        public HttpDigestNonceManager()
         {
             m_pNonces = new List<NonceEntry>();
 

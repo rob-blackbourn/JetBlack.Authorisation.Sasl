@@ -10,7 +10,7 @@ namespace JetBlack.Authorisation
     /// <summary>
     /// This class implements Google Gmail OAUTH version 1.0.
     /// </summary>
-    public class AUTH_Gmail_OAuth1_3leg
+    public class GmailOAuth1
     {
         private string m_ConsumerKey = null;
         private string m_ConsumerSecret = null;
@@ -25,7 +25,7 @@ namespace JetBlack.Authorisation
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public AUTH_Gmail_OAuth1_3leg() : this("anonymous", "anonymous")
+        public GmailOAuth1() : this("anonymous", "anonymous")
         {
         }
 
@@ -36,7 +36,7 @@ namespace JetBlack.Authorisation
         /// <param name="consumerSecret">OAuth consumer secret.</param>
         /// <exception cref="ArgumentNullException">Is riased when <b>consumerKey</b> or <b>consumerSecret</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
-        public AUTH_Gmail_OAuth1_3leg(string consumerKey, string consumerSecret)
+        public GmailOAuth1(string consumerKey, string consumerSecret)
         {
             if (consumerKey == null)
             {

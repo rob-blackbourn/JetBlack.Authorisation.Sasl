@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>JetBlack.Authorisation</RootNamespace>
     <AssemblyName>JetBlack.Authorisation</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,9 +44,9 @@
   <ItemGroup>
     <Compile Include="AuthenticateEventArgs.cs" />
     <Compile Include="UserInfoEventArgs.cs" />
-    <Compile Include="AUTH_Gmail_OAuth1_3leg.cs" />
-    <Compile Include="Auth_HttpDigest.cs" />
-    <Compile Include="Auth_HttpDigest_NonceManager.cs" />
+    <Compile Include="GmailOAuth1.cs" />
+    <Compile Include="HttpDigest.cs" />
+    <Compile Include="HttpDigestNonceManager.cs" />
     <Compile Include="Sasl\Client\ClientMechanism.cs" />
     <Compile Include="Sasl\Client\Mechanisms\ClientCramMd5.cs" />
     <Compile Include="Sasl\Client\Mechanisms\ClientDigestMd5.cs" />
@@ -54,8 +55,8 @@
     <Compile Include="Sasl\Client\Mechanisms\ClientPlain.cs" />
     <Compile Include="Sasl\Client\Mechanisms\ClientXOAuth.cs" />
     <Compile Include="Sasl\Client\Mechanisms\ClientXOAuth2.cs" />
-    <Compile Include="AUTH_SASL_DigestMD5_Challenge.cs" />
-    <Compile Include="AUTH_SASL_DigestMD5_Response.cs" />
+    <Compile Include="DigestMd5Challenge.cs" />
+    <Compile Include="DigestMd5Response.cs" />
     <Compile Include="Sasl\Server\ServerMechanism.cs" />
     <Compile Include="Sasl\Server\Mechanisms\CramMd5ServerMechanism.cs" />
     <Compile Include="Sasl\Server\Mechanisms\DigestMd5ServerMechanism_.cs" />
