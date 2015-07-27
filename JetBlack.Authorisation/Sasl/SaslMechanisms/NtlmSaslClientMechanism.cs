@@ -9,7 +9,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements NTLM authentication.
     /// </summary>
-    public class NtlmSaslClientMechanism : SaslClientMechanism
+    public class NtlmSaslClientMechanism : NtlmSaslMechanism, ISaslClientMechanism
     {
         /// <summary>
         /// This class represents NTLM type 1 message.
@@ -679,7 +679,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <param name="serverResponse">Server sent SASL response.</param>
         /// <returns>Returns challange request what must be sent to server or null if authentication has completed.</returns>
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (_isCompleted)
             {
@@ -725,29 +725,18 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
 
         #endregion
 
-
-        #region Properties implementation
-
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
 
         /// <summary>
-        /// Returns always "NTLM".
-        /// </summary>
-        public override string Name
-        {
-            get { return "NTLM"; }
-        }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
@@ -755,11 +744,9 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication method supports SASL client "inital response".
         /// </summary>
-        public override bool SupportsInitialResponse
+        public bool SupportsInitialResponse
         {
             get { return true; }
         }
-
-        #endregion
     }
 }

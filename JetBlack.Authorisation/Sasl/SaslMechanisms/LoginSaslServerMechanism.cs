@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace JetBlack.Authorisation.Sasl.SaslMechanisms
@@ -6,7 +7,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "LOGIN" authenticaiton.
     /// </summary>
-    public class LoginSaslServerMechanism : SaslServerMechanism
+    public class LoginSaslServerMechanism : LoginSaslMechanism, ISaslServerMechanism
     {
         private bool _isCompleted;
         private bool _isAuthenticated;
@@ -27,7 +28,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Resets any authentication state data.
         /// </summary>
-        public override void Reset()
+        public void Reset()
         {
             _isCompleted = false;
             _isAuthenticated = false;
@@ -51,7 +52,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         ///
         /// NOTE: UserName may be included in initial client response.
         /// </remarks>
-        public override byte[] Continue(byte[] clientResponse)
+        public byte[] Continue(byte[] clientResponse)
         {
             if (clientResponse == null)
                 throw new ArgumentNullException("clientResponse");
@@ -88,7 +89,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
@@ -96,23 +97,15 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if user has authenticated sucessfully.
         /// </summary>
-        public override bool IsAuthenticated
+        public bool IsAuthenticated
         {
             get { return _isAuthenticated; }
         }
 
         /// <summary>
-        /// Returns always "LOGIN".
-        /// </summary>
-        public override string Name
-        {
-            get { return "LOGIN"; }
-        }
-
-        /// <summary>
         /// Gets if specified SASL mechanism is available only to SSL connection.
         /// </summary>
-        public override bool RequireSSL
+        public bool RequireSSL
         {
             get { return _requireSsl; }
         }
@@ -120,10 +113,12 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
+
+        public Dictionary<string, object> Tags { get { return null; } }
 
         /// <summary>
         /// Is called when authentication mechanism needs to authenticate specified user.

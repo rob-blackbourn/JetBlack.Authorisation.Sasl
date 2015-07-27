@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "LOGIN" authenticaiton.
     /// </summary>
-    public class LoginSaslClientMechanism : SaslClientMechanism
+    public class LoginSaslClientMechanism : LoginSaslMechanism, ISaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _password;
@@ -38,7 +38,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <returns>Returns challange request what must be sent to server or null if authentication has completed.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>serverResponse</b> is null reference.</exception>
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (serverResponse == null)
                 throw new ArgumentNullException("serverResponse");
@@ -73,25 +73,19 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
 
         /// <summary>
-        /// Returns always "LOGIN".
-        /// </summary>
-        public override string Name
-        {
-            get { return "LOGIN"; }
-        }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
+
+        public bool SupportsInitialResponse { get { return false; } }
     }
 }

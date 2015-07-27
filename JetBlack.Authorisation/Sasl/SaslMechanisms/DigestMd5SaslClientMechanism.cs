@@ -6,13 +6,12 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton.
     /// </summary>
-    public class DigestMd5SaslClientMechanism : SaslClientMechanism
+    public class DigestMd5SaslClientMechanism : DigestMd5SaslMechanism, ISaslClientMechanism
     {
         private readonly string _protocol;
         private readonly string _serverName;
         private readonly string _userName;
         private readonly string _password;
-        private bool _isCompleted;
         private int _state;
         private DigestMd5Response _response;
 
@@ -71,11 +70,11 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// 
         /// The password in this example was "secret".
         /// </remarks>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (serverResponse == null)
                 throw new ArgumentNullException("serverResponse");
-            if (_isCompleted)
+            if (IsCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
 
             if (_state == 0)
@@ -102,7 +101,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
             else if (_state == 1)
             {
                 _state++;
-                _isCompleted = true;
+                IsCompleted = true;
 
                 // Check rspauth value.
                 if (!string.Equals(Encoding.UTF8.GetString(serverResponse), _response.ToRspauthResponse(_userName, _password), StringComparison.InvariantCultureIgnoreCase))
@@ -119,25 +118,19 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
-        {
-            get { return _isCompleted; }
-        }
-
-        /// <summary>
-        /// Returns always "DIGEST-MD5".
-        /// </summary>
-        public override string Name
-        {
-            get { return "DIGEST-MD5"; }
-        }
+        public bool IsCompleted { get; private set; }
 
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
+        }
+
+        public bool SupportsInitialResponse
+        {
+            get { return false; }
         }
     }
 }

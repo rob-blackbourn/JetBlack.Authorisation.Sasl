@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// This class implements <b>XOAUTH</b> authentication.
     /// </summary>
-    public class XoAuthSaslClientMechanism : SaslClientMechanism
+    public class XoAuthSaslClientMechanism : XoAuthSaslMechanism, ISaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _authString;
@@ -38,7 +38,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <returns>Returns challange request what must be sent to server or null if authentication has completed.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>serverResponse</b> is null reference.</exception>
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (_isCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
@@ -55,7 +55,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
@@ -63,7 +63,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Returns always "LOGIN".
         /// </summary>
-        public override string Name
+        public string Name
         {
             get { return "XOAUTH"; }
         }
@@ -71,7 +71,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
@@ -79,7 +79,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Returns always true, because XOAUTH authentication method supports SASL client "inital response".
         /// </summary>
-        public override bool SupportsInitialResponse
+        public bool SupportsInitialResponse
         {
             get { return true; }
         }

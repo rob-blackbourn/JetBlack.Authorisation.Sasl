@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace JetBlack.Authorisation.Sasl.SaslMechanisms
@@ -6,7 +7,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "PLAIN" authenticaiton. Defined in RFC 4616.
     /// </summary>
-    public class PlainSaslServerMechanism : SaslServerMechanism
+    public class PlainSaslServerMechanism : PlainSaslMechanism, ISaslServerMechanism
     {
         private bool _isCompleted = false;
         private bool _isAuthenticated = false;
@@ -25,7 +26,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Resets any authentication state data.
         /// </summary>
-        public override void Reset()
+        public void Reset()
         {
             _isCompleted = false;
             _isAuthenticated = false;
@@ -59,7 +60,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         ///     C: <NUL>tim<NUL> tanstaaftanstaaf
         ///     S: a002 OK "Authenticated"
         /// </remarks>
-        public override byte[] Continue(byte[] clientResponse)
+        public byte[] Continue(byte[] clientResponse)
         {
             if (clientResponse == null)
                 throw new ArgumentNullException("clientResponse");
@@ -83,7 +84,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
@@ -91,7 +92,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if user has authenticated sucessfully.
         /// </summary>
-        public override bool IsAuthenticated
+        public bool IsAuthenticated
         {
             get { return _isAuthenticated; }
         }
@@ -99,7 +100,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Returns always "PLAIN".
         /// </summary>
-        public override string Name
+        public string Name
         {
             get { return "PLAIN"; }
         }
@@ -107,7 +108,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if specified SASL mechanism is available only to SSL connection.
         /// </summary>
-        public override bool RequireSSL
+        public bool RequireSSL
         {
             get { return _requireSSL; }
         }
@@ -115,9 +116,14 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
+        }
+
+        public Dictionary<string, object> Tags
+        {
+            get { return null; }
         }
 
         /// <summary>

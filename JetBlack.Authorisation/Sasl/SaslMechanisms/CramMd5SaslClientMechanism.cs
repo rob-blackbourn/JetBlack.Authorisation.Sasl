@@ -8,7 +8,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "CRAM-MD5" authenticaiton.
     /// </summary>
-    public class CramMd5SaslClientMechanism : SaslClientMechanism
+    public class CramMd5SaslClientMechanism : CramMd5SaslMechanism, ISaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _password;
@@ -109,7 +109,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// dGltIGI5MTNhNjAyYzdlZGE3YTQ5NWI0ZTZlNzMzNGQzODkw
         /// 
         /// </remarks>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (serverResponse == null)
                 throw new ArgumentNullException("serverResponse");
@@ -132,25 +132,22 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
 
         /// <summary>
-        /// Returns always "LOGIN".
-        /// </summary>
-        public override string Name
-        {
-            get { return "CRAM-MD5"; }
-        }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
+        }
+
+        public bool SupportsInitialResponse
+        {
+            get { return false; }
         }
     }
 }

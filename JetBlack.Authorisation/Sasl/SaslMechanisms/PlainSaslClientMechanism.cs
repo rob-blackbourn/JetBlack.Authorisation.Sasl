@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "PLAIN" authenticaiton.
     /// </summary>
-    public class PlainSaslClientMechanism : SaslClientMechanism
+    public class PlainSaslClientMechanism : PlainSaslMechanism, ISaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _password;
@@ -38,7 +38,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <param name="serverResponse">Server sent SASL response.</param>
         /// <returns>Returns challange request what must be sent to server or null if authentication has completed.</returns>
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (_isCompleted)
             {
@@ -82,23 +82,15 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
 
         /// <summary>
-        /// Returns always "PLAIN".
-        /// </summary>
-        public override string Name
-        {
-            get { return "PLAIN"; }
-        }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
@@ -106,7 +98,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication method supports SASL client "inital response".
         /// </summary>
-        public override bool SupportsInitialResponse
+        public bool SupportsInitialResponse
         {
             get { return true; }
         }

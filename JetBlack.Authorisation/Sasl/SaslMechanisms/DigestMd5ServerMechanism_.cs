@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace JetBlack.Authorisation.Sasl.SaslMechanisms
@@ -6,10 +7,8 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton. Defined in RFC 2831.
     /// </summary>
-    public class DigestMd5SaslServerMechanism : SaslServerMechanism
+    public class DigestMd5SaslServerMechanism : DigestMd5SaslMechanism, ISaslServerMechanism
     {
-        private bool _isCompleted;
-        private bool _isAuthenticated;
         private readonly bool _requireSsl;
         private string _realm = string.Empty;
         private readonly string _nonce;
@@ -29,10 +28,10 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Resets any authentication state data.
         /// </summary>
-        public override void Reset()
+        public void Reset()
         {
-            _isCompleted = false;
-            _isAuthenticated = false;
+            IsCompleted = false;
+            IsAuthenticated = false;
             _userName = "";
             _state = 0;
         }
@@ -67,7 +66,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         ///
         /// The password in this example was "secret".
         /// </remarks>
-        public override byte[] Continue(byte[] clientResponse)
+        public byte[] Continue(byte[] clientResponse)
         {
             if (clientResponse == null)
                 throw new ArgumentNullException("clientResponse");
@@ -98,7 +97,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
                     {
                         if (response.Authenticate(result.UserName, result.Password))
                         {
-                            _isAuthenticated = true;
+                            IsAuthenticated = true;
 
                             return Encoding.UTF8.GetBytes(response.ToRspauthResponse(result.UserName, result.Password));
                         }
@@ -113,7 +112,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
             }
             else
             {
-                _isCompleted = true;
+                IsCompleted = true;
             }
 
             return null;
@@ -122,31 +121,17 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
-        {
-            get { return _isCompleted; }
-        }
+        public bool IsCompleted { get; private set; }
 
         /// <summary>
         /// Gets if user has authenticated sucessfully.
         /// </summary>
-        public override bool IsAuthenticated
-        {
-            get { return _isAuthenticated; }
-        }
-
-        /// <summary>
-        /// Returns always "DIGEST-MD5".
-        /// </summary>
-        public override string Name
-        {
-            get { return "DIGEST-MD5"; }
-        }
+        public bool IsAuthenticated { get; private set; }
 
         /// <summary>
         /// Gets if specified SASL mechanism is available only to SSL connection.
         /// </summary>
-        public override bool RequireSSL
+        public bool RequireSSL
         {
             get { return _requireSsl; }
         }
@@ -167,10 +152,12 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
+
+        public Dictionary<string, object> Tags { get { return null; } }
 
         /// <summary>
         /// Is called when authentication mechanism needs to get user info to complete atuhentication.

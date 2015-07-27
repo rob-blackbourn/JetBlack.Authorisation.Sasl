@@ -43,7 +43,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthenticateEventArgs.cs" />
-    <Compile Include="Sasl\SaslMechanism.cs" />
+    <Compile Include="Sasl\ISaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\CramMd5SaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\DigestMd5SaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\LoginSaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\NtlmSaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\PlainSaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\XoAuth2SaslMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\XoAuthSaslMechanism.cs" />
     <Compile Include="UserInfoEventArgs.cs" />
     <Compile Include="GmailOAuth1.cs" />
     <Compile Include="HttpDigest.cs" />
@@ -72,10 +79,7 @@
     <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Utils\_MD4.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Sasl\Client\Mechanisms\" />
-    <Folder Include="Sasl\Server\Mechanisms\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -6,7 +6,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
     /// <summary>
     /// This class implements <b>XOAUTH2</b> authentication.
     /// </summary>
-    public class XoAuth2SaslClientMechanism : SaslClientMechanism
+    public class XoAuth2SaslClientMechanism : XoAuth2SaslMechanism, ISaslClientMechanism
     {
         private readonly string _userName;
         private readonly string _accessToken;
@@ -40,7 +40,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <returns>Returns challange request what must be sent to server or null if authentication has completed.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>serverResponse</b> is null reference.</exception>
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
-        public override byte[] Continue(byte[] serverResponse)
+        public byte[] Continue(byte[] serverResponse)
         {
             if (_isCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
@@ -58,23 +58,15 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public override bool IsCompleted
+        public bool IsCompleted
         {
             get { return _isCompleted; }
         }
 
         /// <summary>
-        /// Returns always "LOGIN".
-        /// </summary>
-        public override string Name
-        {
-            get { return "XOAUTH2"; }
-        }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
-        public override string UserName
+        public string UserName
         {
             get { return _userName; }
         }
@@ -82,7 +74,7 @@ namespace JetBlack.Authorisation.Sasl.SaslMechanisms
         /// <summary>
         /// Returns always true, because XOAUTH2 authentication method supports SASL client "inital response".
         /// </summary>
-        public override bool SupportsInitialResponse
+        public bool SupportsInitialResponse
         {
             get { return true; }
         }
