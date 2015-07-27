@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JetBlack.Authorisation", "JetBlack.Authorisation\JetBlack.Authorisation.csproj", "{F2EC251A-6F7C-45F9-A866-944D73265BBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JetBlack.Authorisation.Test", "JetBlack.Authorisation.Test\JetBlack.Authorisation.Test.csproj", "{104A5C3E-82A9-48AF-8677-31EEEB0AAB14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2EC251A-6F7C-45F9-A866-944D73265BBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2EC251A-6F7C-45F9-A866-944D73265BBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2EC251A-6F7C-45F9-A866-944D73265BBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2EC251A-6F7C-45F9-A866-944D73265BBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{104A5C3E-82A9-48AF-8677-31EEEB0AAB14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{104A5C3E-82A9-48AF-8677-31EEEB0AAB14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{104A5C3E-82A9-48AF-8677-31EEEB0AAB14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{104A5C3E-82A9-48AF-8677-31EEEB0AAB14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
