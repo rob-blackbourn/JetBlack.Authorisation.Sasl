@@ -1,10 +1,10 @@
-﻿using JetBlack.Authorisation.Utils;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using JetBlack.Authorisation.Utils;
 
-namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms
 {
     /// <summary>
     /// Implements NTLM authentication.

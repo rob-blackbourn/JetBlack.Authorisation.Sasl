@@ -49,20 +49,20 @@
     <Compile Include="HttpDigest.cs" />
     <Compile Include="HttpDigestNonceManager.cs" />
     <Compile Include="Sasl\SaslClientMechanism.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientCramMd5.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientDigestMd5.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientLogin.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientNtlm.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientPlain.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientXoAuth.cs" />
-    <Compile Include="Sasl\Client\Mechanisms\SaslClientXoAuth2.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientCramMd5.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientDigestMd5.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientLogin.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientNtlm.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientPlain.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientXoAuth.cs" />
+    <Compile Include="Sasl\SaslMechanisms\SaslClientXoAuth2.cs" />
     <Compile Include="DigestMd5Challenge.cs" />
     <Compile Include="DigestMd5Response.cs" />
     <Compile Include="Sasl\SaslServerMechanism.cs" />
-    <Compile Include="Sasl\Server\Mechanisms\CramMd5SaslServerMechanism.cs" />
-    <Compile Include="Sasl\Server\Mechanisms\DigestMd5ServerMechanism_.cs" />
-    <Compile Include="Sasl\Server\Mechanisms\LoginSaslServerMechanism.cs" />
-    <Compile Include="Sasl\Server\Mechanisms\PlainSaslServerMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\CramMd5SaslServerMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\DigestMd5ServerMechanism_.cs" />
+    <Compile Include="Sasl\SaslMechanisms\LoginSaslServerMechanism.cs" />
+    <Compile Include="Sasl\SaslMechanisms\PlainSaslServerMechanism.cs" />
     <Compile Include="Utils\Base64.cs" />
     <Compile Include="Utils\ElapsedEventHandler.cs" />
     <Compile Include="Utils\KeyValuePair.cs" />
@@ -71,6 +71,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Utils\_MD4.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Sasl\Client\Mechanisms\" />
+    <Folder Include="Sasl\Server\Mechanisms\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms
 {
     /// <summary>
-    /// This class implements <b>XOAUTH2</b> authentication.
+    /// This class implements <b>XOAUTH</b> authentication.
     /// </summary>
-    public class SaslClientXoAuth2 : SaslClientMechanism
+    public class SaslClientXoAuth : SaslClientMechanism
     {
         private readonly string _userName;
-        private readonly string _accessToken;
+        private readonly string _authString;
         private bool _isCompleted = false;
         private int _state = 0;
 
@@ -17,20 +17,18 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// Default constructor.
         /// </summary>
         /// <param name="userName">User login name.</param>
-        /// <param name="accessToken">The access Token.</param>
-        /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>accessToken</b> is null reference.</exception>
-        /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public SaslClientXoAuth2(string userName, string accessToken)
+        /// <param name="authString">OAUTH authentication string. For example you can use <see cref="GmailOAuth1.GetXoAuthStringForImap"/> to get valid string.</param>
+        /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>authString</b> is null reference.</exception>
+        /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
+        public SaslClientXoAuth(string userName, string authString)
         {
             if (string.IsNullOrEmpty(userName))
-            {
                 throw new ArgumentException("Argument 'userName' value must be specified.", "userName");
-            }
-            if (string.IsNullOrEmpty(accessToken))
-                throw new ArgumentException("Argument 'accessToken' value must be specified.", "accessToken");
+            if (string.IsNullOrEmpty(authString))
+                throw new ArgumentException("Argument 'authString' value must be specified.", "authString");
 
             _userName = userName;
-            _accessToken = accessToken;
+            _authString = authString;
         }
 
         /// <summary>
@@ -48,10 +46,9 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
             if (_state == 0)
             {
                 _isCompleted = true;
-                var initialClientResponse = "user=" + _userName + "\u0001auth=Bearer " + _accessToken + "\u0001\u0001";
-                return Encoding.UTF8.GetBytes(initialClientResponse);
+                return Encoding.UTF8.GetBytes(_authString);
             }
-            
+
             return null;
         }
 
@@ -68,7 +65,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override string Name
         {
-            get { return "XOAUTH2"; }
+            get { return "XOAUTH"; }
         }
 
         /// <summary>
@@ -80,7 +77,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         }
 
         /// <summary>
-        /// Returns always true, because XOAUTH2 authentication method supports SASL client "inital response".
+        /// Returns always true, because XOAUTH authentication method supports SASL client "inital response".
         /// </summary>
         public override bool SupportsInitialResponse
         {

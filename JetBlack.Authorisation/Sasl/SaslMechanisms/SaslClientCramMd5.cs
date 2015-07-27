@@ -1,9 +1,9 @@
-﻿using JetBlack.Authorisation.Utils;
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using JetBlack.Authorisation.Utils;
 
-namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms
 {
     /// <summary>
     /// Implements "CRAM-MD5" authenticaiton.

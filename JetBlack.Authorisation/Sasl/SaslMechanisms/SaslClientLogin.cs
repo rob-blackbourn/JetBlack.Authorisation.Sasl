@@ -1,34 +1,34 @@
 ﻿using System;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms
 {
     /// <summary>
-    /// This class implements <b>XOAUTH</b> authentication.
+    /// Implements "LOGIN" authenticaiton.
     /// </summary>
-    public class SaslClientXoAuth : SaslClientMechanism
+    public class SaslClientLogin : SaslClientMechanism
     {
         private readonly string _userName;
-        private readonly string _authString;
-        private bool _isCompleted = false;
-        private int _state = 0;
+        private readonly string _password;
+        private bool _isCompleted;
+        private int _state;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
         /// <param name="userName">User login name.</param>
-        /// <param name="authString">OAUTH authentication string. For example you can use <see cref="GmailOAuth1.GetXoAuthStringForImap"/> to get valid string.</param>
-        /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>authString</b> is null reference.</exception>
-        /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
-        public SaslClientXoAuth(string userName, string authString)
+        /// <param name="password">User password.</param>
+        /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>password</b> is null reference.</exception>
+        /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
+        public SaslClientLogin(string userName, string password)
         {
             if (string.IsNullOrEmpty(userName))
-                throw new ArgumentException("Argument 'userName' value must be specified.", "userName");
-            if (string.IsNullOrEmpty(authString))
-                throw new ArgumentException("Argument 'authString' value must be specified.", "authString");
+                throw new ArgumentException("Argument 'username' value must be specified.", "userName");
+            if (password == null)
+                throw new ArgumentNullException("password");
 
             _userName = userName;
-            _authString = authString;
+            _password = password;
         }
 
         /// <summary>
@@ -40,16 +40,34 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
         public override byte[] Continue(byte[] serverResponse)
         {
+            if (serverResponse == null)
+                throw new ArgumentNullException("serverResponse");
             if (_isCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
 
+            /* RFC none.
+                S: "Username:"
+                C: userName
+                S: "Password:"
+                C: password
+             
+                NOTE: UserName may be included in initial client response.
+            */
+
             if (_state == 0)
             {
-                _isCompleted = true;
-                return Encoding.UTF8.GetBytes(_authString);
+                ++_state;
+                return Encoding.UTF8.GetBytes(_userName);
             }
-
-            return null;
+            
+            if (_state == 1)
+            {
+                ++_state;
+                _isCompleted = true;
+                return Encoding.UTF8.GetBytes(_password);
+            }
+            
+            throw new InvalidOperationException("Authentication is completed.");
         }
 
         /// <summary>
@@ -65,7 +83,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override string Name
         {
-            get { return "XOAUTH"; }
+            get { return "LOGIN"; }
         }
 
         /// <summary>
@@ -74,14 +92,6 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         public override string UserName
         {
             get { return _userName; }
-        }
-
-        /// <summary>
-        /// Returns always true, because XOAUTH authentication method supports SASL client "inital response".
-        /// </summary>
-        public override bool SupportsInitialResponse
-        {
-            get { return true; }
         }
     }
 }

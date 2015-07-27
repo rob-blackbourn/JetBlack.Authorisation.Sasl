@@ -1,9 +1,9 @@
-﻿using JetBlack.Authorisation.Utils;
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using JetBlack.Authorisation.Utils;
 
-namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms
 {
     /// <summary>
     /// Implements "CRAM-MD5" authenticaiton. Defined in RFC 2195.
