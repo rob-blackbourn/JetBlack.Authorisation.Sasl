@@ -9,19 +9,19 @@ namespace JetBlack.Authorisation
     /// </summary>
     public class HttpDigest
     {
-        private string m_Method = "";
-        private string m_Realm = "";
-        private string m_Nonce = "";
-        private string m_Opaque = "";
-        private string m_Algorithm = "";
-        private string m_Response = "";
-        private string m_UserName = "";
-        private string m_Password = "";
-        private string m_Uri = "";
-        private string m_Qop = "";
-        private string m_Cnonce = "";
-        private int m_NonceCount = 1;
-        private string m_Charset = "";
+        private string _method = "";
+        private string _realm = "";
+        private string _nonce = "";
+        private string _opaque = "";
+        private string _algorithm = "";
+        private string _response = "";
+        private string _userName = "";
+        private string _password = "";
+        private string _uri = "";
+        private string _qop = "";
+        private string _cnonce = "";
+        private int _nonceCount = 1;
+        private string _charset = "";
 
         /// <summary>
         /// Default constructor.
@@ -30,7 +30,7 @@ namespace JetBlack.Authorisation
         /// <param name="requestMethod">Request method.</param>
         public HttpDigest(string digestResponse, string requestMethod)
         {
-            m_Method = requestMethod;
+            _method = requestMethod;
 
             Parse(digestResponse);
         }
@@ -48,14 +48,14 @@ namespace JetBlack.Authorisation
         {
             Parse(digestResponse);
 
-            m_UserName = userName;
-            m_Password = password;
-            m_Method = requestMethod;
-            m_Cnonce = cnonce;
-            m_Uri = uri;
-            m_Qop = "auth";
-            m_NonceCount = 1;
-            m_Response = CalculateResponse(m_UserName, m_Password);
+            _userName = userName;
+            _password = password;
+            _method = requestMethod;
+            _cnonce = cnonce;
+            _uri = uri;
+            _qop = "auth";
+            _nonceCount = 1;
+            _response = CalculateResponse(_userName, _password);
         }
 
         /// <summary>
@@ -66,13 +66,10 @@ namespace JetBlack.Authorisation
         /// <param name="opaque">Opaque value.</param>
         public HttpDigest(string realm, string nonce, string opaque)
         {
-            m_Realm = realm;
-            m_Nonce = nonce;
-            m_Opaque = opaque;
+            _realm = realm;
+            _nonce = nonce;
+            _opaque = opaque;
         }
-
-
-        #region method Authenticate
 
         /// <summary>
         /// Authenticates specified user and password using this class parameters.
@@ -83,20 +80,8 @@ namespace JetBlack.Authorisation
         public bool Authenticate(string userName, string password)
         {
             // Check that our computed digest is same as client provided.
-            if (this.Response == CalculateResponse(userName, password))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return Response == CalculateResponse(userName, password);
         }
-
-        #endregion
-
-
-        #region method Parse
 
         /// <summary>
         /// Parses authetication info from client digest response.
@@ -114,55 +99,53 @@ namespace JetBlack.Authorisation
                 {
                     if (name.ToLower() == "realm")
                     {
-                        m_Realm = TextUtils.UnQuoteString(name_value[1]);
+                        _realm = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "nonce")
                     {
-                        m_Nonce = TextUtils.UnQuoteString(name_value[1]);
+                        _nonce = TextUtils.UnQuoteString(name_value[1]);
                     }
                     // RFC bug ?: RFC 2831. digest-uri = "digest-uri" "=" <"> digest-uri-value <">
                     //            RFC 2617  digest-uri        = "uri" "=" digest-uri-value
                     else if (name.ToLower() == "uri" || name.ToLower() == "digest-uri")
                     {
-                        m_Uri = TextUtils.UnQuoteString(name_value[1]);
+                        _uri = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "qop")
                     {
-                        m_Qop = TextUtils.UnQuoteString(name_value[1]);
+                        _qop = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "nc")
                     {
-                        m_NonceCount = Convert.ToInt32(TextUtils.UnQuoteString(name_value[1]));
+                        _nonceCount = Convert.ToInt32(TextUtils.UnQuoteString(name_value[1]));
                     }
                     else if (name.ToLower() == "cnonce")
                     {
-                        m_Cnonce = TextUtils.UnQuoteString(name_value[1]);
+                        _cnonce = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "response")
                     {
-                        m_Response = TextUtils.UnQuoteString(name_value[1]);
+                        _response = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "opaque")
                     {
-                        m_Opaque = TextUtils.UnQuoteString(name_value[1]);
+                        _opaque = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "username")
                     {
-                        m_UserName = TextUtils.UnQuoteString(name_value[1]);
+                        _userName = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "algorithm")
                     {
-                        m_Algorithm = TextUtils.UnQuoteString(name_value[1]);
+                        _algorithm = TextUtils.UnQuoteString(name_value[1]);
                     }
                     else if (name.ToLower() == "charset")
                     {
-                        m_Charset = TextUtils.UnQuoteString(name_value[1]);
+                        _charset = TextUtils.UnQuoteString(name_value[1]);
                     }
                 }
             }
         }
-
-        #endregion
 
         #region method CalculateRspAuth
 
@@ -348,7 +331,6 @@ namespace JetBlack.Authorisation
 
         #endregion
 
-
         #region method ToString
 
         /// <summary>
@@ -358,18 +340,18 @@ namespace JetBlack.Authorisation
         public override string ToString()
         {
             StringBuilder retVal = new StringBuilder();
-            retVal.Append("realm=\"" + m_Realm + "\",");
-            retVal.Append("username=\"" + m_UserName + "\",");
-            if (!string.IsNullOrEmpty(m_Qop))
+            retVal.Append("realm=\"" + _realm + "\",");
+            retVal.Append("username=\"" + _userName + "\",");
+            if (!string.IsNullOrEmpty(_qop))
             {
-                retVal.Append("qop=\"" + m_Qop + "\",");
+                retVal.Append("qop=\"" + _qop + "\",");
             }
-            retVal.Append("nonce=\"" + m_Nonce + "\",");
-            retVal.Append("nc=\"" + m_NonceCount + "\",");
-            retVal.Append("cnonce=\"" + m_Cnonce + "\",");
-            retVal.Append("response=\"" + m_Response + "\",");
-            retVal.Append("opaque=\"" + m_Opaque + "\",");
-            retVal.Append("uri=\"" + m_Uri + "\"");
+            retVal.Append("nonce=\"" + _nonce + "\",");
+            retVal.Append("nc=\"" + _nonceCount + "\",");
+            retVal.Append("cnonce=\"" + _cnonce + "\",");
+            retVal.Append("response=\"" + _response + "\",");
+            retVal.Append("opaque=\"" + _opaque + "\",");
+            retVal.Append("uri=\"" + _uri + "\"");
 
             return retVal.ToString();
         }
@@ -401,13 +383,13 @@ namespace JetBlack.Authorisation
             {
                 retVal.Append("digest ");
             }
-            retVal.Append("realm=" + TextUtils.QuoteString(m_Realm) + ",");
-            if (!string.IsNullOrEmpty(m_Qop))
+            retVal.Append("realm=" + TextUtils.QuoteString(_realm) + ",");
+            if (!string.IsNullOrEmpty(_qop))
             {
-                retVal.Append("qop=" + TextUtils.QuoteString(m_Qop) + ",");
+                retVal.Append("qop=" + TextUtils.QuoteString(_qop) + ",");
             }
-            retVal.Append("nonce=" + TextUtils.QuoteString(m_Nonce) + ",");
-            retVal.Append("opaque=" + TextUtils.QuoteString(m_Opaque));
+            retVal.Append("nonce=" + TextUtils.QuoteString(_nonce) + ",");
+            retVal.Append("opaque=" + TextUtils.QuoteString(_opaque));
 
             return retVal.ToString();
         }
@@ -439,13 +421,13 @@ namespace JetBlack.Authorisation
 
 
             string response = "";
-            if (string.IsNullOrEmpty(m_Password))
+            if (string.IsNullOrEmpty(_password))
             {
-                response = m_Response;
+                response = _response;
             }
             else
             {
-                response = CalculateResponse(m_UserName, m_Password);
+                response = CalculateResponse(_userName, _password);
             }
 
             StringBuilder authData = new StringBuilder();
@@ -453,38 +435,38 @@ namespace JetBlack.Authorisation
             {
                 authData.Append("digest ");
             }
-            authData.Append("realm=\"" + m_Realm + "\",");
-            authData.Append("username=\"" + m_UserName + "\",");
-            authData.Append("nonce=\"" + m_Nonce + "\",");
-            if (!string.IsNullOrEmpty(m_Uri))
+            authData.Append("realm=\"" + _realm + "\",");
+            authData.Append("username=\"" + _userName + "\",");
+            authData.Append("nonce=\"" + _nonce + "\",");
+            if (!string.IsNullOrEmpty(_uri))
             {
-                authData.Append("uri=\"" + m_Uri + "\",");
+                authData.Append("uri=\"" + _uri + "\",");
             }
-            if (!string.IsNullOrEmpty(m_Qop))
+            if (!string.IsNullOrEmpty(_qop))
             {
-                authData.Append("qop=\"" + m_Qop + "\",");
+                authData.Append("qop=\"" + _qop + "\",");
             }
             // nc value must be specified only if qop is present.
-            if (!string.IsNullOrEmpty(m_Qop))
+            if (!string.IsNullOrEmpty(_qop))
             {
-                authData.Append("nc=" + m_NonceCount.ToString("x8") + ",");
+                authData.Append("nc=" + _nonceCount.ToString("x8") + ",");
             }
-            if (!string.IsNullOrEmpty(m_Cnonce))
+            if (!string.IsNullOrEmpty(_cnonce))
             {
-                authData.Append("cnonce=\"" + m_Cnonce + "\",");
+                authData.Append("cnonce=\"" + _cnonce + "\",");
             }
             authData.Append("response=\"" + response + "\",");
-            if (!string.IsNullOrEmpty(m_Algorithm))
+            if (!string.IsNullOrEmpty(_algorithm))
             {
-                authData.Append("algorithm=\"" + m_Algorithm + "\",");
+                authData.Append("algorithm=\"" + _algorithm + "\",");
             }
-            if (!string.IsNullOrEmpty(m_Opaque))
+            if (!string.IsNullOrEmpty(_opaque))
             {
-                authData.Append("opaque=\"" + m_Opaque + "\",");
+                authData.Append("opaque=\"" + _opaque + "\",");
             }
-            if (!string.IsNullOrEmpty(m_Charset))
+            if (!string.IsNullOrEmpty(_charset))
             {
-                authData.Append("charset=" + m_Charset + ",");
+                authData.Append("charset=" + _charset + ",");
             }
 
             string retVal = authData.ToString().Trim();
@@ -497,7 +479,6 @@ namespace JetBlack.Authorisation
         }
 
         #endregion
-
 
         #region method H
 
@@ -518,7 +499,6 @@ namespace JetBlack.Authorisation
         }
 
         #endregion
-
 
         #region static method CreateNonce
 
@@ -546,7 +526,6 @@ namespace JetBlack.Authorisation
 
         #endregion
 
-
         #region Properties Implementation
 
         /// <summary>
@@ -554,7 +533,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string RequestMethod
         {
-            get { return m_Method; }
+            get { return _method; }
 
             set
             {
@@ -562,7 +541,7 @@ namespace JetBlack.Authorisation
                 {
                     value = "";
                 }
-                m_Method = value;
+                _method = value;
             }
         }
 
@@ -574,7 +553,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Realm
         {
-            get { return m_Realm; }
+            get { return _realm; }
 
             set
             {
@@ -582,7 +561,7 @@ namespace JetBlack.Authorisation
                 {
                     value = "";
                 }
-                m_Realm = value;
+                _realm = value;
             }
         }
 
@@ -594,7 +573,7 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentException">Is raised when invalid value is specified.</exception>
         public string Nonce
         {
-            get { return m_Nonce; }
+            get { return _nonce; }
 
             set
             {
@@ -603,7 +582,7 @@ namespace JetBlack.Authorisation
                     throw new ArgumentException("Nonce value can't be null or empty !");
                 }
 
-                m_Nonce = value;
+                _nonce = value;
             }
         }
 
@@ -614,9 +593,9 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentException">Is raised when invalid value is specified.</exception>
         public string Opaque
         {
-            get { return m_Opaque; }
+            get { return _opaque; }
 
-            set { m_Opaque = value; }
+            set { _opaque = value; }
         }
 
         /*
@@ -632,9 +611,9 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Algorithm
         {
-            get { return m_Algorithm; }
+            get { return _algorithm; }
 
-            set { m_Algorithm = value; }
+            set { _algorithm = value; }
         }
 
 
@@ -644,7 +623,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Response
         {
-            get { return m_Response; }
+            get { return _response; }
         }
 
         /// <summary>
@@ -652,7 +631,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
 
             set
             {
@@ -660,7 +639,7 @@ namespace JetBlack.Authorisation
                 {
                     value = "";
                 }
-                m_UserName = value;
+                _userName = value;
             }
         }
 
@@ -669,7 +648,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Password
         {
-            get { return m_Password; }
+            get { return _password; }
 
             set
             {
@@ -677,7 +656,7 @@ namespace JetBlack.Authorisation
                 {
                     value = "";
                 }
-                m_Password = value;
+                _password = value;
             }
         }
 
@@ -686,9 +665,9 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Uri
         {
-            get { return m_Uri; }
+            get { return _uri; }
 
-            set { m_Uri = value; }
+            set { _uri = value; }
         }
 
         /// <summary>
@@ -699,9 +678,9 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Qop
         {
-            get { return m_Qop; }
+            get { return _qop; }
 
-            set { m_Qop = value; }
+            set { _qop = value; }
         }
 
         /// <summary>
@@ -710,7 +689,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string CNonce
         {
-            get { return m_Cnonce; }
+            get { return _cnonce; }
 
             set
             {
@@ -718,7 +697,7 @@ namespace JetBlack.Authorisation
                 {
                     value = "";
                 }
-                m_Cnonce = value;
+                _cnonce = value;
             }
         }
 
@@ -729,9 +708,9 @@ namespace JetBlack.Authorisation
         /// </summary>
         public int NonceCount
         {
-            get { return m_NonceCount; }
+            get { return _nonceCount; }
 
-            set { m_NonceCount = value; }
+            set { _nonceCount = value; }
         }
 
         #endregion

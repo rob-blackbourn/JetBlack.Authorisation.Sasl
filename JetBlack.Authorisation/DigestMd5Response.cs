@@ -1,4 +1,8 @@
-﻿using JetBlack.Authorisation.Utils;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Security.Cryptography;
+using JetBlack.Authorisation.Utils;
 using System;
 using System.Text;
 
@@ -9,19 +13,7 @@ namespace JetBlack.Authorisation
     /// </summary>
     public class DigestMd5Response
     {
-        private DigestMd5Challenge m_pChallenge = null;
-        private string m_UserName = null;
-        private string m_Password = null;
-        private string m_Realm = null;
-        private string m_Nonce = null;
-        private string m_Cnonce = null;
-        private int m_NonceCount = 0;
-        private string m_Qop = null;
-        private string m_DigestUri = null;
-        private string m_Response = null;
-        private string m_Charset = null;
-        private string m_Cipher = null;
-        private string m_Authzid = null;
+        private string _password = null;
 
         /// <summary>
         /// Default constructor.
@@ -37,46 +29,42 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentNullException">Is raised when <b>challenge</b>,<b>realm</b>,<b>password</b>,<b>nonce</b>,<b>qop</b> or <b>digestUri</b> is null reference.</exception>
         public DigestMd5Response(DigestMd5Challenge challenge, string realm, string userName, string password, string cnonce, int nonceCount, string qop, string digestUri)
         {
+            Cnonce = null;
+            NonceCount = 0;
+            Qop = null;
+            Authzid = null;
+            Cipher = null;
+            Charset = null;
+            Response = null;
+            DigestUri = null;
+            Nonce = null;
+            Realm = null;
+            UserName = null;
             if (challenge == null)
-            {
                 throw new ArgumentNullException("challenge");
-            }
             if (realm == null)
-            {
                 throw new ArgumentNullException("realm");
-            }
             if (userName == null)
-            {
                 throw new ArgumentNullException("userName");
-            }
             if (password == null)
-            {
                 throw new ArgumentNullException("password");
-            }
             if (cnonce == null)
-            {
                 throw new ArgumentNullException("cnonce");
-            }
             if (qop == null)
-            {
                 throw new ArgumentNullException("qop");
-            }
             if (digestUri == null)
-            {
                 throw new ArgumentNullException("digestUri");
-            }
 
-            m_pChallenge = challenge;
-            m_Realm = realm;
-            m_UserName = userName;
-            m_Password = password;
-            m_Nonce = m_pChallenge.Nonce;
-            m_Cnonce = cnonce;
-            m_NonceCount = nonceCount;
-            m_Qop = qop;
-            m_DigestUri = digestUri;
-            m_Response = CalculateResponse(userName, password);
-            m_Charset = challenge.Charset;
+            Realm = realm;
+            UserName = userName;
+            _password = password;
+            Nonce = challenge.Nonce;
+            Cnonce = cnonce;
+            NonceCount = nonceCount;
+            Qop = qop;
+            DigestUri = digestUri;
+            Response = CalculateResponse(userName, password);
+            Charset = challenge.Charset;
         }
 
         /// <summary>
@@ -84,10 +72,18 @@ namespace JetBlack.Authorisation
         /// </summary>
         private DigestMd5Response()
         {
+            Cnonce = null;
+            NonceCount = 0;
+            Qop = null;
+            Authzid = null;
+            Cipher = null;
+            Charset = null;
+            Response = null;
+            DigestUri = null;
+            Nonce = null;
+            Realm = null;
+            UserName = null;
         }
-
-
-        #region static method Parse
 
         /// <summary>
         /// Parses DIGEST-MD5 response from response-string.
@@ -99,9 +95,7 @@ namespace JetBlack.Authorisation
         public static DigestMd5Response Parse(string digestResponse)
         {
             if (digestResponse == null)
-            {
-                throw new ArgumentNullException(digestResponse);
-            }
+                throw new ArgumentNullException("digestResponse");
 
             /* RFC 2831 2.1.2.
                 The client makes note of the "digest-challenge" and then responds
@@ -136,63 +130,49 @@ namespace JetBlack.Authorisation
                 authzid-value    = qdstr-val
             */
 
-            DigestMd5Response retVal = new DigestMd5Response();
-
-            // Set default values.
-            retVal.m_Realm = "";
-
-            string[] parameters = TextUtils.SplitQuotedString(digestResponse, ',');
-            foreach (string parameter in parameters)
+            var retVal = new DigestMd5Response
             {
-                string[] name_value = parameter.Split(new char[] { '=' }, 2);
-                string name = name_value[0].Trim();
+                Realm = "" // Set default values.
+            };
 
-                if (name_value.Length == 2)
+            var parameters = TextUtils.SplitQuotedString(digestResponse, ',');
+            foreach (var parameter in parameters.Select(ToKeyValuePair).Where(x => !Equals(x, default(KeyValuePair<string,string>))))
+            {
+                switch (parameter.Key.ToLower())
                 {
-                    if (name.ToLower() == "username")
-                    {
-                        retVal.m_UserName = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "realm")
-                    {
-                        retVal.m_Realm = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "nonce")
-                    {
-                        retVal.m_Nonce = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "cnonce")
-                    {
-                        retVal.m_Cnonce = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "nc")
-                    {
-                        retVal.m_NonceCount = Int32.Parse(TextUtils.UnQuoteString(name_value[1]), System.Globalization.NumberStyles.HexNumber);
-                    }
-                    else if (name.ToLower() == "qop")
-                    {
-                        retVal.m_Qop = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "digest-uri")
-                    {
-                        retVal.m_DigestUri = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "response")
-                    {
-                        retVal.m_Response = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "charset")
-                    {
-                        retVal.m_Charset = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "cipher")
-                    {
-                        retVal.m_Cipher = TextUtils.UnQuoteString(name_value[1]);
-                    }
-                    else if (name.ToLower() == "authzid")
-                    {
-                        retVal.m_Authzid = TextUtils.UnQuoteString(name_value[1]);
-                    }
+                    case "username":
+                        retVal.UserName = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "realm":
+                        retVal.Realm = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "nonce":
+                        retVal.Nonce = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "cnonce":
+                        retVal.Cnonce = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "nc":
+                        retVal.NonceCount = Int32.Parse(TextUtils.UnQuoteString(parameter.Value), NumberStyles.HexNumber);
+                        break;
+                    case "qop":
+                        retVal.Qop = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "digest-uri":
+                        retVal.DigestUri = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "response":
+                        retVal.Response = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "charset":
+                        retVal.Charset = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "cipher":
+                        retVal.Cipher = TextUtils.UnQuoteString(parameter.Value);
+                        break;
+                    case "authzid":
+                        retVal.Authzid = TextUtils.UnQuoteString(parameter.Value);
+                        break;
                 }
             }
 
@@ -200,33 +180,27 @@ namespace JetBlack.Authorisation
                 Per RFC 2831 2.1.2. Only [username nonce cnonce nc response] parameters are required.
             */
             if (string.IsNullOrEmpty(retVal.UserName))
-            {
                 throw new ParseException("The response-string doesn't contain required parameter 'username' value.");
-            }
             if (string.IsNullOrEmpty(retVal.Nonce))
-            {
                 throw new ParseException("The response-string doesn't contain required parameter 'nonce' value.");
-            }
             if (string.IsNullOrEmpty(retVal.Cnonce))
-            {
                 throw new ParseException("The response-string doesn't contain required parameter 'cnonce' value.");
-            }
             if (retVal.NonceCount < 1)
-            {
                 throw new ParseException("The response-string doesn't contain required parameter 'nc' value.");
-            }
             if (string.IsNullOrEmpty(retVal.Response))
-            {
                 throw new ParseException("The response-string doesn't contain required parameter 'response' value.");
-            }
 
             return retVal;
         }
 
-        #endregion
-
-
-        #region method Authenticate
+        private static KeyValuePair<string, string> ToKeyValuePair(string parameter)
+        {
+            var nameValue = parameter.Split(new[] { '=' }, 2);
+            return
+                nameValue.Length == 2
+                    ? new KeyValuePair<string, string>(nameValue[0].Trim(), nameValue[1])
+                    : default(KeyValuePair<string, string>);
+        }
 
         /// <summary>
         /// Authenticates user.
@@ -238,26 +212,12 @@ namespace JetBlack.Authorisation
         public bool Authenticate(string userName, string password)
         {
             if (userName == null)
-            {
                 throw new ArgumentNullException("userName");
-            }
             if (password == null)
-            {
                 throw new ArgumentNullException("password");
-            }
 
-            if (this.Response == CalculateResponse(userName, password))
-            {
-                return true;
-            }
-
-            return false;
+            return Response == CalculateResponse(userName, password);
         }
-
-        #endregion
-
-
-        #region method ToResponse
 
         /// <summary>
         /// Creates digest response for challenge.
@@ -298,35 +258,25 @@ namespace JetBlack.Authorisation
                 authzid-value    = qdstr-val
             */
 
-            StringBuilder retVal = new StringBuilder();
-            retVal.Append("username=\"" + this.UserName + "\"");
-            retVal.Append(",realm=\"" + this.Realm + "\"");
-            retVal.Append(",nonce=\"" + this.Nonce + "\"");
-            retVal.Append(",cnonce=\"" + this.Cnonce + "\"");
-            retVal.Append(",nc=" + this.NonceCount.ToString("x8"));
-            retVal.Append(",qop=" + this.Qop);
-            retVal.Append(",digest-uri=\"" + this.DigestUri + "\"");
-            retVal.Append(",response=" + this.Response);
-            if (!string.IsNullOrEmpty(this.Charset))
-            {
-                retVal.Append(",charset=" + this.Charset);
-            }
-            if (!string.IsNullOrEmpty(this.Cipher))
-            {
-                retVal.Append(",cipher=\"" + this.Cipher + "\"");
-            }
-            if (!string.IsNullOrEmpty(this.Authzid))
-            {
-                retVal.Append(",authzid=\"" + this.Authzid + "\"");
-            }
+            var retVal = new StringBuilder();
+            retVal.Append("username=\"" + UserName + "\"");
+            retVal.Append(",realm=\"" + Realm + "\"");
+            retVal.Append(",nonce=\"" + Nonce + "\"");
+            retVal.Append(",cnonce=\"" + Cnonce + "\"");
+            retVal.Append(",nc=" + NonceCount.ToString("x8"));
+            retVal.Append(",qop=" + Qop);
+            retVal.Append(",digest-uri=\"" + DigestUri + "\"");
+            retVal.Append(",response=" + Response);
+            if (!string.IsNullOrEmpty(Charset))
+                retVal.Append(",charset=" + Charset);
+            if (!string.IsNullOrEmpty(Cipher))
+                retVal.Append(",cipher=\"" + Cipher + "\"");
+            if (!string.IsNullOrEmpty(Authzid))
+                retVal.Append(",authzid=\"" + Authzid + "\"");
             // auth-param
 
             return retVal.ToString();
         }
-
-        #endregion
-
-        #region method ToRspauthResponse
 
         /// <summary>
         /// Creates <b>response-auth</b> response for client.
@@ -365,32 +315,18 @@ namespace JetBlack.Authorisation
             */
 
             byte[] a2 = null;
-            if (string.IsNullOrEmpty(this.Qop) || this.Qop.ToLower() == "auth")
-            {
-                a2 = Encoding.UTF8.GetBytes(":" + this.DigestUri);
-            }
-            else if (this.Qop.ToLower() == "auth-int" || this.Qop.ToLower() == "auth-conf")
-            {
-                a2 = Encoding.UTF8.GetBytes(":" + this.DigestUri + ":00000000000000000000000000000000");
-            }
+            if (string.IsNullOrEmpty(Qop) || Qop.ToLower() == "auth")
+                a2 = Encoding.UTF8.GetBytes(":" + DigestUri);
+            else if (Qop.ToLower() == "auth-int" || Qop.ToLower() == "auth-conf")
+                a2 = Encoding.UTF8.GetBytes(":" + DigestUri + ":00000000000000000000000000000000");
 
-            if (this.Qop.ToLower() == "auth")
-            {
-                // RFC 2831 2.1.2.1.
-                // response-value = HEX(KD(HEX(H(A1)),{nonce-value,":" nc-value,":",cnonce-value,":",qop-value,":",HEX(H(A2))}))
-
-                return "rspauth=" + hex(kd(hex(h(a1(userName, password))), m_Nonce + ":" + this.NonceCount.ToString("x8") + ":" + this.Cnonce + ":" + this.Qop + ":" + hex(h(a2))));
-            }
-            else
-            {
-                throw new ArgumentException("Invalid 'qop' value '" + this.Qop + "'.");
-            }
+            if (Qop.ToLower() != "auth")
+                throw new ArgumentException("Invalid 'qop' value '" + Qop + "'.");
+            
+            // RFC 2831 2.1.2.1.
+            // response-value = HEX(KD(HEX(H(A1)),{nonce-value,":" nc-value,":",cnonce-value,":",qop-value,":",HEX(H(A2))}))
+            return "rspauth=" + Hex(Kd(Hex(h(A1(userName, password))), Nonce + ":" + NonceCount.ToString("x8") + ":" + Cnonce + ":" + Qop + ":" + Hex(h(a2))));
         }
-
-        #endregion
-
-
-        #region method CalculateResponse
 
         /// <summary>
         /// Calculates digest response.
@@ -463,22 +399,13 @@ namespace JetBlack.Authorisation
                 mechanism (i.e., MUST NOT be sent, and MUST be ignored if received).
             */
 
-            if (string.IsNullOrEmpty(this.Qop) || this.Qop.ToLower() == "auth")
-            {
-                // RFC 2831 2.1.2.1.
-                // response-value = HEX(KD(HEX(H(A1)),{nonce-value,":" nc-value,":",cnonce-value,":",qop-value,":",HEX(H(A2))}))
-
-                return hex(kd(hex(h(a1(userName, password))), m_Nonce + ":" + this.NonceCount.ToString("x8") + ":" + this.Cnonce + ":" + this.Qop + ":" + hex(h(a2()))));
-            }
-            else
-            {
-                throw new ArgumentException("Invalid 'qop' value '" + this.Qop + "'.");
-            }
+            if (!string.IsNullOrEmpty(Qop) && Qop.ToLower() != "auth")
+                throw new ArgumentException("Invalid 'qop' value '" + Qop + "'.");
+            
+            // RFC 2831 2.1.2.1.
+            // response-value = HEX(KD(HEX(H(A1)),{nonce-value,":" nc-value,":",cnonce-value,":",qop-value,":",HEX(H(A2))}))
+            return Hex(Kd(Hex(h(A1(userName, password))), Nonce + ":" + NonceCount.ToString("x8") + ":" + Cnonce + ":" + Qop + ":" + Hex(h(A2()))));
         }
-
-        #endregion
-
-        #region method a1
 
         /// <summary>
         /// Calculates A1 value.
@@ -486,7 +413,7 @@ namespace JetBlack.Authorisation
         /// <param name="userName">User name.</param>
         /// <param name="password">Password.</param>
         /// <returns>Returns A1 value.</returns>
-        private byte[] a1(string userName, string password)
+        private byte[] A1(string userName, string password)
         {
             /* RFC 2831 2.1.2.1.
                 If authzid is specified, then A1 is
@@ -502,39 +429,35 @@ namespace JetBlack.Authorisation
                 NOTE: HTTP MD5 RFC 2617 supports more algorithms. SASL requires md5-sess.
             */
 
-            if (string.IsNullOrEmpty(this.Authzid))
+            if (string.IsNullOrEmpty(Authzid))
             {
-                byte[] user_realm_pwd = h(Encoding.UTF8.GetBytes(userName + ":" + this.Realm + ":" + password));
-                byte[] nonce_cnonce = Encoding.UTF8.GetBytes(":" + m_Nonce + ":" + this.Cnonce);
+                var userRealmPwd = h(Encoding.UTF8.GetBytes(userName + ":" + Realm + ":" + password));
+                var nonceCnonce = Encoding.UTF8.GetBytes(":" + Nonce + ":" + Cnonce);
 
-                byte[] retVal = new byte[user_realm_pwd.Length + nonce_cnonce.Length];
-                Array.Copy(user_realm_pwd, 0, retVal, 0, user_realm_pwd.Length);
-                Array.Copy(nonce_cnonce, 0, retVal, user_realm_pwd.Length, nonce_cnonce.Length);
+                var retVal = new byte[userRealmPwd.Length + nonceCnonce.Length];
+                Array.Copy(userRealmPwd, 0, retVal, 0, userRealmPwd.Length);
+                Array.Copy(nonceCnonce, 0, retVal, userRealmPwd.Length, nonceCnonce.Length);
 
                 return retVal;
             }
             else
             {
-                byte[] user_realm_pwd = h(Encoding.UTF8.GetBytes(userName + ":" + this.Realm + ":" + password));
-                byte[] nonce_cnonce_authzid = Encoding.UTF8.GetBytes(":" + m_Nonce + ":" + this.Cnonce + ":" + this.Authzid);
+                var userRealmPwd = h(Encoding.UTF8.GetBytes(userName + ":" + Realm + ":" + password));
+                var nonceCnonceAuthzid = Encoding.UTF8.GetBytes(":" + Nonce + ":" + Cnonce + ":" + Authzid);
 
-                byte[] retVal = new byte[user_realm_pwd.Length + nonce_cnonce_authzid.Length];
-                Array.Copy(user_realm_pwd, 0, retVal, 0, user_realm_pwd.Length);
-                Array.Copy(nonce_cnonce_authzid, 0, retVal, user_realm_pwd.Length, nonce_cnonce_authzid.Length);
+                var retVal = new byte[userRealmPwd.Length + nonceCnonceAuthzid.Length];
+                Array.Copy(userRealmPwd, 0, retVal, 0, userRealmPwd.Length);
+                Array.Copy(nonceCnonceAuthzid, 0, retVal, userRealmPwd.Length, nonceCnonceAuthzid.Length);
 
                 return retVal;
             }
         }
 
-        #endregion
-
-        #region method a2
-
         /// <summary>
         /// Calculates A2 value.
         /// </summary>
         /// <returns>Returns A2 value.</returns>
-        private byte[] a2()
+        private byte[] A2()
         {
             /* RFC 2831 2.1.2.1.
                 If the "qop" directive's value is "auth", then A2 is:
@@ -554,23 +477,14 @@ namespace JetBlack.Authorisation
                 NOTE: In SASL entity-body hash always "00000000000000000000000000000000".
             */
 
-            if (string.IsNullOrEmpty(this.Qop) || this.Qop.ToLower() == "auth")
-            {
-                return Encoding.UTF8.GetBytes("AUTHENTICATE:" + this.DigestUri);
-            }
-            else if (this.Qop.ToLower() == "auth-int" || this.Qop.ToLower() == "auth-conf")
-            {
-                return Encoding.UTF8.GetBytes("AUTHENTICATE:" + this.DigestUri + ":00000000000000000000000000000000");
-            }
-            else
-            {
-                throw new ArgumentException("Invalid 'qop' value '" + this.Qop + "'.");
-            }
+            if (string.IsNullOrEmpty(Qop) || Qop.ToLower() == "auth")
+                return Encoding.UTF8.GetBytes("AUTHENTICATE:" + DigestUri);
+            
+            if (Qop.ToLower() == "auth-int" || Qop.ToLower() == "auth-conf")
+                return Encoding.UTF8.GetBytes("AUTHENTICATE:" + DigestUri + ":00000000000000000000000000000000");
+            
+            throw new ArgumentException("Invalid 'qop' value '" + Qop + "'.");
         }
-
-        #endregion
-
-        #region method h
 
         /// <summary>
         /// Computes MD5 hash.
@@ -579,129 +493,79 @@ namespace JetBlack.Authorisation
         /// <returns>Return MD5 hash.</returns>
         private byte[] h(byte[] value)
         {
-            System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
-
+            MD5 md5 = new MD5CryptoServiceProvider();
             return md5.ComputeHash(value);
         }
 
-        #endregion
-
-        #region method kd
-
-        private byte[] kd(string secret, string data)
+        private byte[] Kd(string secret, string data)
         {
             // KD(secret, data) = H(concat(secret, ":", data))
-
             return h(Encoding.UTF8.GetBytes(secret + ":" + data));
         }
-
-        #endregion
-
-        #region method hex
 
         /// <summary>
         /// Converts value to hex string.
         /// </summary>
         /// <param name="value">Value to convert.</param>
         /// <returns>Returns hex string.</returns>
-        private string hex(byte[] value)
+        private static string Hex(byte[] value)
         {
             return Net_Utils.ToHex(value);
         }
 
-        #endregion
-
-
-        #region Properties implementation
-
         /// <summary>
         /// Gets user name.
         /// </summary>
-        public string UserName
-        {
-            get { return m_UserName; }
-        }
+        public string UserName { get; private set; }
 
         /// <summary>
         /// Gets realm(domain) name.
         /// </summary>
-        public string Realm
-        {
-            get { return m_Realm; }
-        }
+        public string Realm { get; private set; }
 
         /// <summary>
         /// Gets nonce value.
         /// </summary>
-        public string Nonce
-        {
-            get { return m_Nonce; }
-        }
+        public string Nonce { get; private set; }
 
         /// <summary>
         /// Gets cnonce value.
         /// </summary>
-        public string Cnonce
-        {
-            get { return m_Cnonce; }
-        }
+        public string Cnonce { get; private set; }
 
         /// <summary>
         /// Gets nonce count.
         /// </summary>
-        public int NonceCount
-        {
-            get { return m_NonceCount; }
-        }
+        public int NonceCount { get; private set; }
 
         /// <summary>
         /// Gets "quality of protection" value.
         /// </summary>
-        public string Qop
-        {
-            get { return m_Qop; }
-        }
+        public string Qop { get; private set; }
 
         /// <summary>
         /// Gets digest URI value.
         /// </summary>
-        public string DigestUri
-        {
-            get { return m_DigestUri; }
-        }
+        public string DigestUri { get; private set; }
 
         /// <summary>
         /// Gets response value.
         /// </summary>
-        public string Response
-        {
-            get { return m_Response; }
-        }
+        public string Response { get; private set; }
 
         /// <summary>
         /// Gets charset value.
         /// </summary>
-        public string Charset
-        {
-            get { return m_Charset; }
-        }
+        public string Charset { get; private set; }
 
         /// <summary>
         /// Gets cipher value.
         /// </summary>
-        public string Cipher
-        {
-            get { return m_Cipher; }
-        }
+        public string Cipher { get; private set; }
 
         /// <summary>
         /// Gets authorization ID.
         /// </summary>
-        public string Authzid
-        {
-            get { return m_Authzid; }
-        }
-
-        #endregion
+        public string Authzid { get; private set; }
     }
 }

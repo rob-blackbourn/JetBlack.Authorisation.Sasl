@@ -7,9 +7,8 @@ namespace JetBlack.Authorisation
     /// </summary>
     public class UserInfoEventArgs : EventArgs
     {
-        private bool m_UserExists = false;
-        private string m_UserName = "";
-        private string m_Password = "";
+        private readonly string _userName = string.Empty;
+        private string _password = string.Empty;
 
         /// <summary>
         /// Default constructor.
@@ -19,37 +18,23 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
         public UserInfoEventArgs(string userName)
         {
-            if (userName == null)
-            {
-                throw new ArgumentNullException("userName");
-            }
-            if (userName == string.Empty)
-            {
+            if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'userName' value must be specified.", "userName");
-            }
 
-            m_UserName = userName;
+            _userName = userName;
         }
-
-
-        #region Properties implementation
 
         /// <summary>
         /// Gets or sets if specified user exists.
         /// </summary>
-        public bool UserExists
-        {
-            get { return m_UserExists; }
-
-            set { m_UserExists = value; }
-        }
+        public bool UserExists { get; set; }
 
         /// <summary>
         /// Gets user name.
         /// </summary>
         public string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
         }
 
         /// <summary>
@@ -57,12 +42,8 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Password
         {
-            get { return m_Password; }
-
-            set { m_Password = value; }
+            get { return _password; }
+            set { _password = value; }
         }
-
-        #endregion
-
     }
 }

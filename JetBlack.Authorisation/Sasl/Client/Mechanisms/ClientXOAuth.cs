@@ -17,7 +17,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// Default constructor.
         /// </summary>
         /// <param name="userName">User login name.</param>
-        /// <param name="authString">OAUTH authentication string. For example you can use <see cref="GmailOAuth1.GetXOAuthStringForImap()"/> to get valid string.</param>
+        /// <param name="authString">OAUTH authentication string. For example you can use <see cref="GmailOAuth1.GetXoAuthStringForImap"/> to get valid string.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>authString</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
         public ClientXOAuth(string userName, string authString)

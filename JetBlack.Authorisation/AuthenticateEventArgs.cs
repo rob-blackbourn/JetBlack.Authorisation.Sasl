@@ -7,54 +7,39 @@ namespace JetBlack.Authorisation
     /// </summary>
     public class AuthenticateEventArgs : EventArgs
     {
-        private bool m_IsAuthenticated = false;
-        private string m_AuthorizationID = "";
-        private string m_UserName = "";
-        private string m_Password = "";
+        private readonly string _authorizationId = "";
+        private readonly string _userName = "";
+        private readonly string _password = "";
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="authorizationID">Authorization ID.</param>
+        /// <param name="authorizationId">Authorization ID.</param>
         /// <param name="userName">User name.</param>
         /// <param name="password">Password.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the argumnets has invalid value.</exception>
-        public AuthenticateEventArgs(string authorizationID, string userName, string password)
+        public AuthenticateEventArgs(string authorizationId, string userName, string password)
         {
-            if (userName == null)
-            {
-                throw new ArgumentNullException("userName");
-            }
-            if (userName == string.Empty)
-            {
+            if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'userName' value must be specified.", "userName");
-            }
 
-            m_AuthorizationID = authorizationID;
-            m_UserName = userName;
-            m_Password = password;
+            _authorizationId = authorizationId;
+            _userName = userName;
+            _password = password;
         }
-
-
-        #region Properties implementation
 
         /// <summary>
         /// Gets or sets if specified user is authenticated.
         /// </summary>
-        public bool IsAuthenticated
-        {
-            get { return m_IsAuthenticated; }
-
-            set { m_IsAuthenticated = value; }
-        }
+        public bool IsAuthenticated { get; set; }
 
         /// <summary>
         /// Gets authorization ID.
         /// </summary>
-        public string AuthorizationID
+        public string AuthorizationId
         {
-            get { return m_AuthorizationID; }
+            get { return _authorizationId; }
         }
 
         /// <summary>
@@ -62,7 +47,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
         }
 
         /// <summary>
@@ -70,9 +55,7 @@ namespace JetBlack.Authorisation
         /// </summary>
         public string Password
         {
-            get { return m_Password; }
+            get { return _password; }
         }
-
-        #endregion
     }
 }

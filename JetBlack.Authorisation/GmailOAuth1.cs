@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
@@ -12,20 +13,20 @@ namespace JetBlack.Authorisation
     /// </summary>
     public class GmailOAuth1
     {
-        private string m_ConsumerKey = null;
-        private string m_ConsumerSecret = null;
-        private string m_Scope = "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email";
-        private string m_RequestToken = null;
-        private string m_RequestTokenSecret = null;
-        private string m_AccessToken = null;
-        private string m_AccessTokenSecret = null;
-        private string m_Email = null;
-        private Random m_pRandom = null;
+        private readonly Random _random = new Random();
+        private readonly string _consumerKey;
+        private readonly string _consumerSecret;
+        private const string Scope = "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email";
+        private string _requestToken;
+        private string _requestTokenSecret;
+        private string _accessToken;
+        private string _accessTokenSecret;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public GmailOAuth1() : this("anonymous", "anonymous")
+        public GmailOAuth1()
+            : this("anonymous", "anonymous")
         {
         }
 
@@ -38,31 +39,14 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
         public GmailOAuth1(string consumerKey, string consumerSecret)
         {
-            if (consumerKey == null)
-            {
-                throw new ArgumentNullException("consumerKey");
-            }
-            if (consumerKey == "")
-            {
+            if (string.IsNullOrEmpty(consumerKey))
                 throw new ArgumentException("Argument 'consumerKey' value must be specified.", "consumerKey");
-            }
-            if (consumerSecret == null)
-            {
-                throw new ArgumentNullException("consumerSecret");
-            }
-            if (consumerSecret == "")
-            {
+            if (string.IsNullOrEmpty(consumerSecret))
                 throw new ArgumentException("Argument 'consumerSecret' value must be specified.", "consumerSecret");
-            }
 
-            m_ConsumerKey = consumerKey;
-            m_ConsumerSecret = consumerSecret;
-
-            m_pRandom = new Random();
+            _consumerKey = consumerKey;
+            _consumerSecret = consumerSecret;
         }
-
-
-        #region method GetRequestToken
 
         /// <summary>
         /// Gets Gmail request Token.
@@ -82,92 +66,86 @@ namespace JetBlack.Authorisation
         public void GetRequestToken(string callback)
         {
             if (callback == null)
-            {
                 throw new ArgumentNullException("callback");
-            }
-            if (!string.IsNullOrEmpty(m_RequestToken))
-            {
+            if (!string.IsNullOrEmpty(_requestToken))
                 throw new InvalidOperationException("Invalid state, you have already called this 'GetRequestToken' method.");
-            }
 
             // For more info see: http://googlecodesamples.com/oauth_playground/
 
-            string timestamp = GenerateTimeStamp();
-            string nonce = GenerateNonce();
+            var timestamp = GenerateTimeStamp();
+            var nonce = GenerateNonce();
 
-            string url = "https://www.google.com/accounts/OAuthGetRequestToken?scope=" + UrlEncode(m_Scope);
-            string sigUrl = "https://www.google.com/accounts/OAuthGetRequestToken";
+            var url = "https://www.google.com/accounts/OAuthGetRequestToken?scope=" + UrlEncode(Scope);
+            const string sigUrl = "https://www.google.com/accounts/OAuthGetRequestToken";
 
             // Build signature base.
-            StringBuilder xxx = new StringBuilder();
+            var xxx = new StringBuilder();
             xxx.Append("oauth_callback=" + UrlEncode(callback));
-            xxx.Append("&oauth_consumer_key=" + UrlEncode(m_ConsumerKey));
+            xxx.Append("&oauth_consumer_key=" + UrlEncode(_consumerKey));
             xxx.Append("&oauth_nonce=" + UrlEncode(nonce));
             xxx.Append("&oauth_signature_method=" + UrlEncode("HMAC-SHA1"));
             xxx.Append("&oauth_timestamp=" + UrlEncode(timestamp));
             xxx.Append("&oauth_version=" + UrlEncode("1.0"));
-            xxx.Append("&scope=" + UrlEncode(m_Scope));
-            string signatureBase = "GET" + "&" + UrlEncode(sigUrl) + "&" + UrlEncode(xxx.ToString());
+            xxx.Append("&scope=" + UrlEncode(Scope));
+            var signatureBase = "GET" + "&" + UrlEncode(sigUrl) + "&" + UrlEncode(xxx.ToString());
 
             // Calculate signature.
-            string signature = ComputeHmacSha1Signature(signatureBase, m_ConsumerSecret, null);
+            var signature = ComputeHmacSha1Signature(signatureBase, _consumerSecret, null);
 
             //Build Authorization header.
-            StringBuilder authHeader = new StringBuilder();
+            var authHeader = new StringBuilder();
             authHeader.Append("Authorization: OAuth ");
             authHeader.Append("oauth_version=\"1.0\", ");
             authHeader.Append("oauth_nonce=\"" + nonce + "\", ");
             authHeader.Append("oauth_timestamp=\"" + timestamp + "\", ");
-            authHeader.Append("oauth_consumer_key=\"" + m_ConsumerKey + "\", ");
+            authHeader.Append("oauth_consumer_key=\"" + _consumerKey + "\", ");
             authHeader.Append("oauth_callback=\"" + UrlEncode(callback) + "\", ");
             authHeader.Append("oauth_signature_method=\"HMAC-SHA1\", ");
             authHeader.Append("oauth_signature=\"" + UrlEncode(signature) + "\"");
 
             // Create web request and read response.
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
             request.Headers.Add(authHeader.ToString());
-            using (WebResponse response = request.GetResponse())
+            using (var response = request.GetResponse())
             {
-                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                using (var stream = response.GetResponseStream())
                 {
-                    foreach (string parameter in HttpUtility.UrlDecode(reader.ReadToEnd()).Split('&'))
+                    if (stream == null)
+                        throw new IOException("Failed to get a response.");
+                    using (var reader = new StreamReader(stream))
                     {
-                        string[] name_value = parameter.Split('=');
-                        if (string.Equals(name_value[0], "oauth_token", StringComparison.InvariantCultureIgnoreCase))
+                        var line = HttpUtility.UrlDecode(reader.ReadToEnd());
+                        if (line == null)
+                            throw new InvalidDataException("Unable to decode the input parameters.");
+                        foreach (var parameter in line.Split('&'))
                         {
-                            m_RequestToken = name_value[1];
-                        }
-                        else if (string.Equals(name_value[0], "oauth_token_secret", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            m_RequestTokenSecret = name_value[1];
+                            var nameValue = parameter.Split('=');
+                            if (string.Equals(nameValue[0], "oauth_token", StringComparison.InvariantCultureIgnoreCase))
+                                _requestToken = nameValue[1];
+                            else if (string.Equals(nameValue[0], "oauth_token_secret", StringComparison.InvariantCultureIgnoreCase))
+                                _requestTokenSecret = nameValue[1];
                         }
                     }
                 }
             }
         }
 
-        #endregion
-
-        #region method GetAuthorizationUrl
-
         /// <summary>
         /// Gets Gmail authorization Url.
         /// </summary>
-        /// <returns>Returns Gmail authorization Url.</returns>
+        /// <returns>
+        /// Returns Gmail authorization Url.
+        /// </returns>
         public string GetAuthorizationUrl()
         {
-            if (m_RequestToken == null)
+            if (_requestToken == null)
             {
                 throw new InvalidOperationException("You need call method 'GetRequestToken' before.");
             }
 
-            return "https://accounts.google.com/OAuthAuthorizeToken?oauth_token=" + UrlEncode(m_RequestToken) + "&hd=default";
+            return "https://accounts.google.com/OAuthAuthorizeToken?oauth_token=" + UrlEncode(_requestToken) + "&hd=default";
         }
-
-        #endregion
-
-        #region method GetAccessToken
 
         /// <summary>
         /// Gets Gmail access token.
@@ -178,91 +156,81 @@ namespace JetBlack.Authorisation
         /// <exception cref="InvalidOperationException">Is raised when this method is called in invalid state.</exception>
         public void GetAccessToken(string verificationCode)
         {
-            if (verificationCode == null)
-            {
-                throw new ArgumentNullException("verificationCode");
-            }
-            if (verificationCode == "")
-            {
+            if (string.IsNullOrEmpty(verificationCode))
                 throw new ArgumentException("Argument 'verificationCode' value must be specified.", "verificationCode");
-            }
-            if (string.IsNullOrEmpty(m_RequestToken))
-            {
+            if (string.IsNullOrEmpty(_requestToken))
                 throw new InvalidOperationException("Invalid state, you need to call 'GetRequestToken' method first.");
-            }
-            if (!string.IsNullOrEmpty(m_AccessToken))
-            {
+            if (!string.IsNullOrEmpty(_accessToken))
                 throw new InvalidOperationException("Invalid state, you have already called this 'GetAccessToken' method.");
-            }
 
             // For more info see: http://googlecodesamples.com/oauth_playground/
 
-            string url = "https://www.google.com/accounts/OAuthGetAccessToken";
-            string timestamp = GenerateTimeStamp();
-            string nonce = GenerateNonce();
+            const string url = "https://www.google.com/accounts/OAuthGetAccessToken";
+            var timestamp = GenerateTimeStamp();
+            var nonce = GenerateNonce();
 
             // Build signature base.
-            StringBuilder xxx = new StringBuilder();
-            xxx.Append("oauth_consumer_key=" + UrlEncode(m_ConsumerKey));
+            var xxx = new StringBuilder();
+            xxx.Append("oauth_consumer_key=" + UrlEncode(_consumerKey));
             xxx.Append("&oauth_nonce=" + UrlEncode(nonce));
             xxx.Append("&oauth_signature_method=" + UrlEncode("HMAC-SHA1"));
             xxx.Append("&oauth_timestamp=" + UrlEncode(timestamp));
-            xxx.Append("&oauth_token=" + UrlEncode(m_RequestToken));
+            xxx.Append("&oauth_token=" + UrlEncode(_requestToken));
             xxx.Append("&oauth_verifier=" + UrlEncode(verificationCode));
             xxx.Append("&oauth_version=" + UrlEncode("1.0"));
-            string signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
+            var signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
 
             // Calculate signature.
-            string signature = ComputeHmacSha1Signature(signatureBase, m_ConsumerSecret, m_RequestTokenSecret);
+            var signature = ComputeHmacSha1Signature(signatureBase, _consumerSecret, _requestTokenSecret);
 
             //Build Authorization header.
-            StringBuilder authHeader = new StringBuilder();
+            var authHeader = new StringBuilder();
             authHeader.Append("Authorization: OAuth ");
             authHeader.Append("oauth_version=\"1.0\", ");
             authHeader.Append("oauth_nonce=\"" + nonce + "\", ");
             authHeader.Append("oauth_timestamp=\"" + timestamp + "\", ");
-            authHeader.Append("oauth_consumer_key=\"" + m_ConsumerKey + "\", ");
+            authHeader.Append("oauth_consumer_key=\"" + _consumerKey + "\", ");
             authHeader.Append("oauth_verifier=\"" + UrlEncode(verificationCode) + "\", ");
-            authHeader.Append("oauth_token=\"" + UrlEncode(m_RequestToken) + "\", ");
+            authHeader.Append("oauth_token=\"" + UrlEncode(_requestToken) + "\", ");
             authHeader.Append("oauth_signature_method=\"HMAC-SHA1\", ");
             authHeader.Append("oauth_signature=\"" + UrlEncode(signature) + "\"");
 
             // Create web request and read response.
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
             request.Headers.Add(authHeader.ToString());
-            using (WebResponse response = request.GetResponse())
+            using (var response = request.GetResponse())
             {
-                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                using (var stream = response.GetResponseStream())
                 {
-                    foreach (string parameter in HttpUtility.UrlDecode(reader.ReadToEnd()).Split('&'))
+                    if (stream == null)
+                        throw new IOException("Failed to get the response stream.");
+                    using (var reader = new StreamReader(stream))
                     {
-                        string[] name_value = parameter.Split('=');
-                        if (string.Equals(name_value[0], "oauth_token", StringComparison.InvariantCultureIgnoreCase))
+                        var line = HttpUtility.UrlDecode(reader.ReadToEnd());
+                        if (line == null)
+                            throw new InvalidDataException("Failed to decode the parameters");
+                        foreach (var parameter in line.Split('&'))
                         {
-                            m_AccessToken = name_value[1];
-                        }
-                        else if (string.Equals(name_value[0], "oauth_token_secret", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            m_AccessTokenSecret = name_value[1];
+                            var nameValue = parameter.Split('=');
+                            if (string.Equals(nameValue[0], "oauth_token", StringComparison.InvariantCultureIgnoreCase))
+                                _accessToken = nameValue[1];
+                            else if (string.Equals(nameValue[0], "oauth_token_secret", StringComparison.InvariantCultureIgnoreCase))
+                                _accessTokenSecret = nameValue[1];
                         }
                     }
                 }
             }
         }
 
-        #endregion
-
-        #region method GetXOAuthStringForSmtp
-
         /// <summary>
         /// Gets Gmail XOAUTH authentication string.
         /// </summary>
         /// <returns>Returns Gmail XOAUTH authentication string.</returns>
         /// <exception cref="InvalidOperationException">Is raised when this method is called in invalid state.</exception>
-        public string GetXOAuthStringForSmtp()
+        public string GetXoAuthStringForSmtp()
         {
-            return GetXOAuthStringForSmtp(m_Email == null ? GetUserEmail() : m_Email);
+            return GetXoAuthStringForSmtp(Email ?? GetUserEmail());
         }
 
         /// <summary>
@@ -273,64 +241,52 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentNullException">Is raised when <b>email</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
         /// <exception cref="InvalidOperationException">Is raised when this method is called in invalid state.</exception>
-        public string GetXOAuthStringForSmtp(string email)
+        public string GetXoAuthStringForSmtp(string email)
         {
-            if (email == null)
-            {
-                throw new ArgumentNullException("email");
-            }
-            if (email == "")
-            {
+            if (string.IsNullOrEmpty(email))
                 throw new ArgumentException("Argument 'email' value must be specified.", "email");
-            }
-            if (string.IsNullOrEmpty(m_AccessToken))
-            {
+            if (string.IsNullOrEmpty(_accessToken))
                 throw new InvalidOperationException("Invalid state, you need to call 'GetAccessToken' method first.");
-            }
 
-            string url = "https://mail.google.com/mail/b/" + email + "/smtp/";
-            string timestamp = GenerateTimeStamp();
-            string nonce = GenerateNonce();
+            var url = "https://mail.google.com/mail/b/" + email + "/smtp/";
+            var timestamp = GenerateTimeStamp();
+            var nonce = GenerateNonce();
 
             // Build signature base.
-            StringBuilder xxx = new StringBuilder();
-            xxx.Append("oauth_consumer_key=" + UrlEncode(m_ConsumerKey));
+            var xxx = new StringBuilder();
+            xxx.Append("oauth_consumer_key=" + UrlEncode(_consumerKey));
             xxx.Append("&oauth_nonce=" + UrlEncode(nonce));
             xxx.Append("&oauth_signature_method=" + UrlEncode("HMAC-SHA1"));
             xxx.Append("&oauth_timestamp=" + UrlEncode(timestamp));
-            xxx.Append("&oauth_token=" + UrlEncode(m_AccessToken));
+            xxx.Append("&oauth_token=" + UrlEncode(_accessToken));
             xxx.Append("&oauth_version=" + UrlEncode("1.0"));
-            string signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
+            var signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
 
             // Calculate signature.
-            string signature = ComputeHmacSha1Signature(signatureBase, m_ConsumerSecret, m_AccessTokenSecret);
+            var signature = ComputeHmacSha1Signature(signatureBase, _consumerSecret, _accessTokenSecret);
 
-            StringBuilder retVal = new StringBuilder();
+            var retVal = new StringBuilder();
             retVal.Append("GET ");
             retVal.Append(url);
-            retVal.Append(" oauth_consumer_key=\"" + UrlEncode(m_ConsumerKey) + "\"");
+            retVal.Append(" oauth_consumer_key=\"" + UrlEncode(_consumerKey) + "\"");
             retVal.Append(",oauth_nonce=\"" + UrlEncode(nonce) + "\"");
             retVal.Append(",oauth_signature=\"" + UrlEncode(signature) + "\"");
             retVal.Append(",oauth_signature_method=\"" + "HMAC-SHA1\"");
             retVal.Append(",oauth_timestamp=\"" + UrlEncode(timestamp) + "\"");
-            retVal.Append(",oauth_token=\"" + UrlEncode(m_AccessToken) + "\"");
+            retVal.Append(",oauth_token=\"" + UrlEncode(_accessToken) + "\"");
             retVal.Append(",oauth_version=\"" + "1.0\"");
 
             return retVal.ToString();
         }
-
-        #endregion
-
-        #region method GetXOAuthStringForImap
 
         /// <summary>
         /// Gets Gmail XOAUTH authentication string.
         /// </summary>
         /// <returns>Returns Gmail XOAUTH authentication string.</returns>
         /// <exception cref="InvalidOperationException">Is raised when this method is called in invalid state.</exception>
-        public string GetXOAuthStringForImap()
+        public string GetXoAuthStringForImap()
         {
-            return GetXOAuthStringForImap(m_Email == null ? GetUserEmail() : m_Email);
+            return GetXoAuthStringForImap(Email ?? GetUserEmail());
         }
 
         /// <summary>
@@ -341,55 +297,43 @@ namespace JetBlack.Authorisation
         /// <exception cref="ArgumentNullException">Is raised when <b>email</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
         /// <exception cref="InvalidOperationException">Is raised when this method is called in invalid state.</exception>
-        public string GetXOAuthStringForImap(string email)
+        public string GetXoAuthStringForImap(string email)
         {
-            if (email == null)
-            {
-                throw new ArgumentNullException("email");
-            }
-            if (email == "")
-            {
+            if (string.IsNullOrEmpty(email))
                 throw new ArgumentException("Argument 'email' value must be specified.", "email");
-            }
-            if (string.IsNullOrEmpty(m_AccessToken))
-            {
+            if (string.IsNullOrEmpty(_accessToken))
                 throw new InvalidOperationException("Invalid state, you need to call 'GetAccessToken' method first.");
-            }
 
-            string url = "https://mail.google.com/mail/b/" + email + "/imap/";
-            string timestamp = GenerateTimeStamp();
-            string nonce = GenerateNonce();
+            var url = "https://mail.google.com/mail/b/" + email + "/imap/";
+            var timestamp = GenerateTimeStamp();
+            var nonce = GenerateNonce();
 
             // Build signature base.
-            StringBuilder xxx = new StringBuilder();
-            xxx.Append("oauth_consumer_key=" + UrlEncode(m_ConsumerKey));
+            var xxx = new StringBuilder();
+            xxx.Append("oauth_consumer_key=" + UrlEncode(_consumerKey));
             xxx.Append("&oauth_nonce=" + UrlEncode(nonce));
             xxx.Append("&oauth_signature_method=" + UrlEncode("HMAC-SHA1"));
             xxx.Append("&oauth_timestamp=" + UrlEncode(timestamp));
-            xxx.Append("&oauth_token=" + UrlEncode(m_AccessToken));
+            xxx.Append("&oauth_token=" + UrlEncode(_accessToken));
             xxx.Append("&oauth_version=" + UrlEncode("1.0"));
-            string signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
+            var signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
 
             // Calculate signature.
-            string signature = ComputeHmacSha1Signature(signatureBase, m_ConsumerSecret, m_AccessTokenSecret);
+            var signature = ComputeHmacSha1Signature(signatureBase, _consumerSecret, _accessTokenSecret);
 
-            StringBuilder retVal = new StringBuilder();
+            var retVal = new StringBuilder();
             retVal.Append("GET ");
             retVal.Append(url);
-            retVal.Append(" oauth_consumer_key=\"" + UrlEncode(m_ConsumerKey) + "\"");
+            retVal.Append(" oauth_consumer_key=\"" + UrlEncode(_consumerKey) + "\"");
             retVal.Append(",oauth_nonce=\"" + UrlEncode(nonce) + "\"");
             retVal.Append(",oauth_signature=\"" + UrlEncode(signature) + "\"");
             retVal.Append(",oauth_signature_method=\"" + "HMAC-SHA1\"");
             retVal.Append(",oauth_timestamp=\"" + UrlEncode(timestamp) + "\"");
-            retVal.Append(",oauth_token=\"" + UrlEncode(m_AccessToken) + "\"");
+            retVal.Append(",oauth_token=\"" + UrlEncode(_accessToken) + "\"");
             retVal.Append(",oauth_version=\"" + "1.0\"");
 
             return retVal.ToString();
         }
-
-        #endregion
-
-        #region method GetUserEmail
 
         /// <summary>
         /// Gets user Gmail email address. 
@@ -398,154 +342,127 @@ namespace JetBlack.Authorisation
         /// <exception cref="InvalidOperationException">Is raised when this method is called in invalid state.</exception>
         public string GetUserEmail()
         {
-            if (string.IsNullOrEmpty(m_AccessToken))
+            if (string.IsNullOrEmpty(_accessToken))
             {
                 throw new InvalidOperationException("Invalid state, you need to call 'GetAccessToken' method first.");
             }
 
-            string url = "https://www.googleapis.com/userinfo/email";
-            string timestamp = GenerateTimeStamp();
-            string nonce = GenerateNonce();
+            const string url = "https://www.googleapis.com/userinfo/email";
+            var timestamp = GenerateTimeStamp();
+            var nonce = GenerateNonce();
 
             // Build signature base.
-            StringBuilder xxx = new StringBuilder();
-            xxx.Append("oauth_consumer_key=" + UrlEncode(m_ConsumerKey));
+            var xxx = new StringBuilder();
+            xxx.Append("oauth_consumer_key=" + UrlEncode(_consumerKey));
             xxx.Append("&oauth_nonce=" + UrlEncode(nonce));
             xxx.Append("&oauth_signature_method=" + UrlEncode("HMAC-SHA1"));
             xxx.Append("&oauth_timestamp=" + UrlEncode(timestamp));
-            xxx.Append("&oauth_token=" + UrlEncode(m_AccessToken));
+            xxx.Append("&oauth_token=" + UrlEncode(_accessToken));
             xxx.Append("&oauth_version=" + UrlEncode("1.0"));
-            string signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
+            var signatureBase = "GET" + "&" + UrlEncode(url) + "&" + UrlEncode(xxx.ToString());
 
             // Calculate signature.
-            string signature = ComputeHmacSha1Signature(signatureBase, m_ConsumerSecret, m_AccessTokenSecret);
+            var signature = ComputeHmacSha1Signature(signatureBase, _consumerSecret, _accessTokenSecret);
 
             //Build Authorization header.
-            StringBuilder authHeader = new StringBuilder();
+            var authHeader = new StringBuilder();
             authHeader.Append("Authorization: OAuth ");
             authHeader.Append("oauth_version=\"1.0\", ");
             authHeader.Append("oauth_nonce=\"" + nonce + "\", ");
             authHeader.Append("oauth_timestamp=\"" + timestamp + "\", ");
-            authHeader.Append("oauth_consumer_key=\"" + m_ConsumerKey + "\", ");
-            authHeader.Append("oauth_token=\"" + UrlEncode(m_AccessToken) + "\", ");
+            authHeader.Append("oauth_consumer_key=\"" + _consumerKey + "\", ");
+            authHeader.Append("oauth_token=\"" + UrlEncode(_accessToken) + "\", ");
             authHeader.Append("oauth_signature_method=\"HMAC-SHA1\", ");
             authHeader.Append("oauth_signature=\"" + UrlEncode(signature) + "\"");
 
             // Create web request and read response.
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
             request.Headers.Add(authHeader.ToString());
-            using (WebResponse response = request.GetResponse())
+            using (var response = request.GetResponse())
             {
-                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                using (var stream = response.GetResponseStream())
                 {
-                    foreach (string parameter in HttpUtility.UrlDecode(reader.ReadToEnd()).Split('&'))
+                    if (stream == null)
+                        throw new IOException("Failed to get response stream");
+                    using (var reader = new StreamReader(stream))
                     {
-                        string[] name_value = parameter.Split('=');
-                        if (string.Equals(name_value[0], "email", StringComparison.InvariantCultureIgnoreCase))
+                        var line = HttpUtility.UrlDecode(reader.ReadToEnd());
+                        if (line == null)
+                            throw new InvalidDataException("Failed to decode input parameters.");
+                        foreach (var parameter in line.Split('&'))
                         {
-                            m_Email = name_value[1];
+                            var nameValue = parameter.Split('=');
+                            if (string.Equals(nameValue[0], "email", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Email = nameValue[1];
+                            }
                         }
                     }
                 }
             }
 
-            return m_Email;
+            return Email;
         }
-
-        #endregion
-
-
-        #region method UrlEncode
 
         private string UrlEncode(string value)
         {
             if (value == null)
-            {
                 throw new ArgumentNullException("value");
-            }
 
-            string unreservedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
-            StringBuilder retVal = new StringBuilder();
+            const string unreservedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
+            var retVal = new StringBuilder();
 
-            foreach (char symbol in value)
+            foreach (var symbol in value)
             {
                 if (unreservedChars.IndexOf(symbol) != -1)
-                {
                     retVal.Append(symbol);
-                }
                 else
-                {
                     retVal.Append('%' + String.Format("{0:X2}", (int)symbol));
-                }
             }
 
             return retVal.ToString();
         }
 
-        #endregion
-
-        #region method ComputeHmacSha1Signature
-
         private string ComputeHmacSha1Signature(string signatureBase, string consumerSecret, string tokenSecret)
         {
             if (signatureBase == null)
-            {
                 throw new ArgumentNullException("signatureBase");
-            }
             if (consumerSecret == null)
-            {
                 throw new ArgumentNullException("consumerSecret");
-            }
 
-            HMACSHA1 hmacsha1 = new HMACSHA1();
-            hmacsha1.Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), string.IsNullOrEmpty(tokenSecret) ? "" : UrlEncode(tokenSecret)));
+            var hmacsha1 = new HMACSHA1
+            {
+                Key = Encoding.ASCII.GetBytes(string.Format("{0}&{1}", UrlEncode(consumerSecret), string.IsNullOrEmpty(tokenSecret) ? "" : UrlEncode(tokenSecret)))
+            };
 
-            return Convert.ToBase64String(hmacsha1.ComputeHash(System.Text.Encoding.ASCII.GetBytes(signatureBase)));
+            return Convert.ToBase64String(hmacsha1.ComputeHash(Encoding.ASCII.GetBytes(signatureBase)));
         }
-
-        #endregion
-
-        #region method GenerateTimeStamp
 
         /// <summary>
         /// Creates the timestamp for the signature.        
         /// </summary>
         /// <returns></returns>
-        private string GenerateTimeStamp()
+        private static string GenerateTimeStamp()
         {
             // Default implementation of UNIX time of the current UTC time
-            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            var ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
 
-            return Convert.ToInt64(ts.TotalSeconds).ToString();
+            return Convert.ToInt64(ts.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
-
-        #endregion
-
-        #region method GenerateNonce
 
         /// <summary>
         /// Creates a nonce for the signature.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The nonce</returns>
         private string GenerateNonce()
         {
-            return m_pRandom.Next(123400, 9999999).ToString();
+            return _random.Next(123400, 9999999).ToString(CultureInfo.InvariantCulture);
         }
-
-        #endregion
-
-
-        #region Properties implementation
 
         /// <summary>
         /// Gets user Gmail email address. Returns null if no GetUserEmail method ever called.
         /// </summary>
-        public string Email
-        {
-            get { return m_Email; }
-        }
-
-        #endregion
+        public string Email { get; private set; }
     }
 }

@@ -9,44 +9,29 @@ namespace JetBlack.Authorisation
     /// </summary>
     public class DigestMd5Challenge
     {
-        private string[] m_Realm = null;
-        private string m_Nonce = null;
-        private string[] m_QopOptions = null;
-        private bool m_Stale = false;
-        private int m_Maxbuf = 0;
-        private string m_Charset = null;
-        private string m_Algorithm = null;
-        private string m_CipherOpts = null;
-
         /// <summary>
         /// Default constructor.
         /// </summary>
         /// <param name="realm">Realm value.</param>
         /// <param name="nonce">Nonce value.</param>
         /// <param name="qopOptions">Quality of protections supported. Normally this is "auth".</param>
-        /// <param name="stale">Stale value.</param>
+        /// <param name="isStale">Stale value.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>realm</b>,<b>nonce</b> or <b>qopOptions</b> is null reference.</exception>
-        public DigestMd5Challenge(string[] realm, string nonce, string[] qopOptions, bool stale)
+        public DigestMd5Challenge(string[] realm, string nonce, string[] qopOptions, bool isStale)
         {
             if (realm == null)
-            {
                 throw new ArgumentNullException("realm");
-            }
             if (nonce == null)
-            {
                 throw new ArgumentNullException("nonce");
-            }
             if (qopOptions == null)
-            {
                 throw new ArgumentNullException("qopOptions");
-            }
 
-            m_Realm = realm;
-            m_Nonce = nonce;
-            m_QopOptions = qopOptions;
-            m_Stale = stale;
-            m_Charset = "utf-8";
-            m_Algorithm = "md5-sess";
+            Realm = realm;
+            Nonce = nonce;
+            QopOptions = qopOptions;
+            IsStale = isStale;
+            Charset = "utf-8";
+            Algorithm = "md5-sess";
         }
 
         /// <summary>
@@ -55,9 +40,6 @@ namespace JetBlack.Authorisation
         private DigestMd5Challenge()
         {
         }
-
-
-        #region static method Parse
 
         /// <summary>
         /// Parses DIGEST-MD5 challenge from challenge-string.
@@ -69,51 +51,49 @@ namespace JetBlack.Authorisation
         public static DigestMd5Challenge Parse(string challenge)
         {
             if (challenge == null)
-            {
                 throw new ArgumentNullException("challenge");
-            }
 
-            DigestMd5Challenge retVal = new DigestMd5Challenge();
+            var retVal = new DigestMd5Challenge();
 
-            string[] parameters = TextUtils.SplitQuotedString(challenge, ',');
-            foreach (string parameter in parameters)
+            var parameters = TextUtils.SplitQuotedString(challenge, ',');
+            foreach (var parameter in parameters)
             {
-                string[] name_value = parameter.Split(new char[] { '=' }, 2);
-                string name = name_value[0].Trim();
+                var nameValue = parameter.Split(new[] { '=' }, 2);
+                var name = nameValue[0].Trim();
 
-                if (name_value.Length == 2)
+                if (nameValue.Length == 2)
                 {
                     if (name.ToLower() == "realm")
                     {
-                        retVal.m_Realm = TextUtils.UnQuoteString(name_value[1]).Split(',');
+                        retVal.Realm = TextUtils.UnQuoteString(nameValue[1]).Split(',');
                     }
                     else if (name.ToLower() == "nonce")
                     {
-                        retVal.m_Nonce = TextUtils.UnQuoteString(name_value[1]);
+                        retVal.Nonce = TextUtils.UnQuoteString(nameValue[1]);
                     }
                     else if (name.ToLower() == "qop")
                     {
-                        retVal.m_QopOptions = TextUtils.UnQuoteString(name_value[1]).Split(',');
+                        retVal.QopOptions = TextUtils.UnQuoteString(nameValue[1]).Split(',');
                     }
                     else if (name.ToLower() == "stale")
                     {
-                        retVal.m_Stale = Convert.ToBoolean(TextUtils.UnQuoteString(name_value[1]));
+                        retVal.IsStale = Convert.ToBoolean(TextUtils.UnQuoteString(nameValue[1]));
                     }
                     else if (name.ToLower() == "maxbuf")
                     {
-                        retVal.m_Maxbuf = Convert.ToInt32(TextUtils.UnQuoteString(name_value[1]));
+                        retVal.Maxbuf = Convert.ToInt32(TextUtils.UnQuoteString(nameValue[1]));
                     }
                     else if (name.ToLower() == "charset")
                     {
-                        retVal.m_Charset = TextUtils.UnQuoteString(name_value[1]);
+                        retVal.Charset = TextUtils.UnQuoteString(nameValue[1]);
                     }
                     else if (name.ToLower() == "algorithm")
                     {
-                        retVal.m_Algorithm = TextUtils.UnQuoteString(name_value[1]);
+                        retVal.Algorithm = TextUtils.UnQuoteString(nameValue[1]);
                     }
                     else if (name.ToLower() == "cipher-opts")
                     {
-                        retVal.m_CipherOpts = TextUtils.UnQuoteString(name_value[1]);
+                        retVal.CipherOpts = TextUtils.UnQuoteString(nameValue[1]);
                     }
                     //else if(name.ToLower() == "auth-param"){
                     //    retVal.m_AuthParam = TextUtils.UnQuoteString(name_value[1]);
@@ -136,67 +116,54 @@ namespace JetBlack.Authorisation
             return retVal;
         }
 
-        #endregion
-
-
-        #region method ToChallenge
-
         /// <summary>
         /// Returns DIGEST-MD5 "digest-challenge" string.
         /// </summary>
-        /// <returns>Returns DIGEST-MD5 "digest-challenge" string.</returns>
+        /// <returns>
+        /// Returns DIGEST-MD5 "digest-challenge" string.
+        /// </returns>
+        /// <remarks>
+        /// RFC 2831 2.1.1.
+        /// The server starts by sending a challenge. The data encoded in the
+        /// challenge contains a string formatted according to the rules for a
+        /// "digest-challenge" defined as follows:
+        /// 
+        /// digest-challenge  =
+        ///                     1#( realm | nonce | qop-options | stale | maxbuf | charset
+        ///                         algorithm | cipher-opts | auth-param )
+        /// 
+        /// realm             = "realm" "=" <"> realm-value <">
+        /// realm-value       = qdstr-val
+        /// nonce             = "nonce" "=" <"> nonce-value <">
+        /// nonce-value       = qdstr-val
+        /// qop-options       = "qop" "=" <"> qop-list <">
+        /// qop-list          = 1#qop-value
+        /// qop-value         = "auth" | "auth-int" | "auth-conf" | token
+        /// stale             = "stale" "=" "true"
+        /// maxbuf            = "maxbuf" "=" maxbuf-value
+        /// maxbuf-value      = 1*DIGIT
+        /// charset           = "charset" "=" "utf-8"
+        /// algorithm         = "algorithm" "=" "md5-sess"
+        /// cipher-opts       = "cipher" "=" <"> 1#cipher-value <">
+        /// cipher-value      = "3des" | "des" | "rc4-40" | "rc4" | "rc4-56" | token
+        /// auth-param        = token "=" ( token | quoted-string )
+        /// </remarks>
         public string ToChallenge()
         {
-            /* RFC 2831 2.1.1.
-                The server starts by sending a challenge. The data encoded in the
-                challenge contains a string formatted according to the rules for a
-                "digest-challenge" defined as follows:
-
-                digest-challenge  =
-                                    1#( realm | nonce | qop-options | stale | maxbuf | charset
-                                        algorithm | cipher-opts | auth-param )
-
-                realm             = "realm" "=" <"> realm-value <">
-                realm-value       = qdstr-val
-                nonce             = "nonce" "=" <"> nonce-value <">
-                nonce-value       = qdstr-val
-                qop-options       = "qop" "=" <"> qop-list <">
-                qop-list          = 1#qop-value
-                qop-value         = "auth" | "auth-int" | "auth-conf" | token
-                stale             = "stale" "=" "true"
-                maxbuf            = "maxbuf" "=" maxbuf-value
-                maxbuf-value      = 1*DIGIT
-                charset           = "charset" "=" "utf-8"
-                algorithm         = "algorithm" "=" "md5-sess"
-                cipher-opts       = "cipher" "=" <"> 1#cipher-value <">
-                cipher-value      = "3des" | "des" | "rc4-40" | "rc4" | "rc4-56" | token
-                auth-param        = token "=" ( token | quoted-string )
-            */
-
-            StringBuilder retVal = new StringBuilder();
-            retVal.Append("realm=\"" + Net_Utils.ArrayToString(this.Realm, ",") + "\"");
-            retVal.Append(",nonce=\"" + this.Nonce + "\"");
-            if (this.QopOptions != null)
-            {
-                retVal.Append(",qop=\"" + Net_Utils.ArrayToString(this.QopOptions, ",") + "\"");
-            }
-            if (this.Stale)
-            {
+            var retVal = new StringBuilder();
+            retVal.Append("realm=\"" + Net_Utils.ArrayToString(Realm, ",") + "\"");
+            retVal.Append(",nonce=\"" + Nonce + "\"");
+            if (QopOptions != null)
+                retVal.Append(",qop=\"" + Net_Utils.ArrayToString(QopOptions, ",") + "\"");
+            if (IsStale)
                 retVal.Append(",stale=true");
-            }
-            if (this.Maxbuf > 0)
-            {
-                retVal.Append(",maxbuf=" + this.Maxbuf);
-            }
-            if (!string.IsNullOrEmpty(this.Charset))
-            {
-                retVal.Append(",charset=" + this.Charset);
-            }
-            retVal.Append(",algorithm=" + this.Algorithm);
-            if (!string.IsNullOrEmpty(this.CipherOpts))
-            {
-                retVal.Append(",cipher-opts=\"" + this.CipherOpts + "\"");
-            }
+            if (Maxbuf > 0)
+                retVal.Append(",maxbuf=" + Maxbuf);
+            if (!string.IsNullOrEmpty(Charset))
+                retVal.Append(",charset=" + Charset);
+            retVal.Append(",algorithm=" + Algorithm);
+            if (!string.IsNullOrEmpty(CipherOpts))
+                retVal.Append(",cipher-opts=\"" + CipherOpts + "\"");
             //if(!string.IsNullOrEmpty(this.AuthParam)){
             //    retVal.Append("auth-param=\"" + this.AuthParam + "\"");
             //}
@@ -204,75 +171,44 @@ namespace JetBlack.Authorisation
             return retVal.ToString();
         }
 
-        #endregion
-
-
-        #region Properties implementation
-
         /// <summary>
         /// Gets realm value. For more info see RFC 2831.
         /// </summary>
-        public string[] Realm
-        {
-            get { return m_Realm; }
-        }
+        public string[] Realm { get; private set; }
 
         /// <summary>
         /// Gets nonce value. For more info see RFC 2831.
         /// </summary>
-        public string Nonce
-        {
-            get { return m_Nonce; }
-        }
+        public string Nonce { get; private set; }
 
         /// <summary>
         /// Gets qop-options value. For more info see RFC 2831.
         /// </summary>
-        public string[] QopOptions
-        {
-            get { return m_QopOptions; }
-        }
+        public string[] QopOptions { get; private set; }
 
         /// <summary>
         /// Gets if stale value. For more info see RFC 2831.
         /// </summary>
-        public bool Stale
-        {
-            get { return m_Stale; }
-        }
+        public bool IsStale { get; private set; }
 
         /// <summary>
         /// Gets maxbuf value. For more info see RFC 2831.
         /// </summary>
-        public int Maxbuf
-        {
-            get { return m_Maxbuf; }
-        }
+        public int Maxbuf { get; private set; }
 
         /// <summary>
         /// Gets charset value. For more info see RFC 2831.
         /// </summary>
-        public string Charset
-        {
-            get { return m_Charset; }
-        }
+        public string Charset { get; private set; }
 
         /// <summary>
         /// Gets algorithm value. For more info see RFC 2831.
         /// </summary>
-        public string Algorithm
-        {
-            get { return m_Algorithm; }
-        }
+        public string Algorithm { get; private set; }
 
         /// <summary>
         /// Gets cipher-opts value. For more info see RFC 2831.
         /// </summary>
-        public string CipherOpts
-        {
-            get { return m_CipherOpts; }
-        }
-
-        #endregion
+        public string CipherOpts { get; private set; }
     }
 }
