@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.Login
 {
     /// <summary>
     /// Implements "LOGIN" authenticaiton.

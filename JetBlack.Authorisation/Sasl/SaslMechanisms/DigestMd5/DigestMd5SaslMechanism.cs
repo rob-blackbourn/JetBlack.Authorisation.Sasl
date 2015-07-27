@@ -1,4 +1,4 @@
-﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms.DigestMd5
 {
     public abstract class DigestMd5SaslMechanism : ISaslMechanism
     {

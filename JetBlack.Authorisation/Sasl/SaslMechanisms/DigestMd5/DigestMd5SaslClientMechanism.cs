@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.DigestMd5
 {
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton.

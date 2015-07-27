@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.Plain
 {
     /// <summary>
     /// Implements "PLAIN" authenticaiton. Defined in RFC 4616.

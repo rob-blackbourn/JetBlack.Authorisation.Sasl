@@ -1,4 +1,4 @@
-﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms.CramMd5
 {
     public class CramMd5SaslMechanism : ISaslMechanism
     {

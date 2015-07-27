@@ -1,4 +1,4 @@
-﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms.XoAuth
 {
     public abstract class XoAuthSaslMechanism : ISaslMechanism
     {

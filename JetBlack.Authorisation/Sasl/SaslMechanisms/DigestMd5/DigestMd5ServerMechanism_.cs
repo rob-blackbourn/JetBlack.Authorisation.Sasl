@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.DigestMd5
 {
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton. Defined in RFC 2831.

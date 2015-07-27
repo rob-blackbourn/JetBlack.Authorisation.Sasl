@@ -1,4 +1,4 @@
-﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+﻿namespace JetBlack.Authorisation.Sasl.SaslMechanisms.Ntlm
 {
     public abstract class NtlmSaslMechanism : ISaslMechanism
     {

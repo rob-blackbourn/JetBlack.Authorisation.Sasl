@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using JetBlack.Authorisation.Utils;
 
-namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.CramMd5
 {
     /// <summary>
     /// Implements "CRAM-MD5" authenticaiton. Defined in RFC 2195.

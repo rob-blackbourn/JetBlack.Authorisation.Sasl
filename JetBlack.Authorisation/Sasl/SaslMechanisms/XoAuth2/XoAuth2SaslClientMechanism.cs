@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace JetBlack.Authorisation.Sasl.SaslMechanisms
+namespace JetBlack.Authorisation.Sasl.SaslMechanisms.XoAuth2
 {
     /// <summary>
     /// This class implements <b>XOAUTH2</b> authentication.
