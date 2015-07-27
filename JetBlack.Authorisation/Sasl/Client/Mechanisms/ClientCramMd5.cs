@@ -10,10 +10,10 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// </summary>
     public class ClientCramMd5 : ClientMechanism
     {
-        private bool _isCompleted = false;
-        private int _state = 0;
-        private string _userName = null;
-        private string _password = null;
+        private readonly string _userName;
+        private readonly string _password;
+        private bool _isCompleted;
+        private int _state;
 
         /// <summary>
         /// Default constructor.
@@ -122,7 +122,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 _isCompleted = true;
 
                 var kMd5 = new HMACMD5(Encoding.UTF8.GetBytes(_password));
-                string passwordHash = Net_Utils.ToHex(kMd5.ComputeHash(serverResponse)).ToLower();
+                string passwordHash = NetUtils.ToHex(kMd5.ComputeHash(serverResponse)).ToLower();
                 return Encoding.UTF8.GetBytes(_userName + " " + passwordHash);
             }
             else

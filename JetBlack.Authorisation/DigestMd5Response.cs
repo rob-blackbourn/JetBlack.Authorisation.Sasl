@@ -510,7 +510,7 @@ namespace JetBlack.Authorisation
         /// <returns>Returns hex string.</returns>
         private static string Hex(byte[] value)
         {
-            return Net_Utils.ToHex(value);
+            return NetUtils.ToHex(value);
         }
 
         /// <summary>

@@ -10,9 +10,9 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
     /// </summary>
     public class CramMd5ServerMechanism : ServerMechanism
     {
-        private bool _isCompleted = false;
-        private bool _isAuthenticated = false;
-        private bool _requireSSL = false;
+        private bool _isCompleted;
+        private bool _isAuthenticated;
+        private readonly bool _requireSsl;
         private string _userName = "";
         private int _state = 0;
         private string _key = "";
@@ -20,10 +20,10 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="requireSSL">Specifies if this mechanism is available to SSL connections only.</param>
-        public CramMd5ServerMechanism(bool requireSSL)
+        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
+        public CramMd5ServerMechanism(bool requireSsl)
         {
-            _requireSSL = requireSSL;
+            _requireSsl = requireSsl;
         }
 
         /// <summary>
@@ -114,23 +114,23 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
             if (_state == 0)
             {
                 ++_state;
-                _key = "<" + Guid.NewGuid().ToString() + "@host" + ">";
+                _key = "<" + Guid.NewGuid() + "@host" + ">";
 
                 return Encoding.UTF8.GetBytes(_key);
             }
             else
             {
                 // Parse client response. response = userName SP hash.
-                string[] user_hash = Encoding.UTF8.GetString(clientResponse).Split(' ');
-                if (user_hash.Length == 2 && !string.IsNullOrEmpty(user_hash[0]))
+                var userHash = Encoding.UTF8.GetString(clientResponse).Split(' ');
+                if (userHash.Length == 2 && !string.IsNullOrEmpty(userHash[0]))
                 {
-                    _userName = user_hash[0];
-                    UserInfoEventArgs result = OnGetUserInfo(user_hash[0]);
+                    _userName = userHash[0];
+                    var result = OnGetUserInfo(userHash[0]);
                     if (result.UserExists)
                     {
                         // hash = Hex(HmacMd5(hashKey,password))
-                        string hash = Net_Utils.ToHex(HmacMd5(_key, result.Password));
-                        if (hash == user_hash[1])
+                        var hash = NetUtils.ToHex(HmacMd5(_key, result.Password));
+                        if (hash == userHash[1])
                         {
                             _isAuthenticated = true;
                         }
@@ -149,10 +149,9 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// <param name="hashKey">MD5 key.</param>
         /// <param name="text">Text to hash.</param>
         /// <returns>Returns MD5 hash.</returns>
-        private byte[] HmacMd5(string hashKey, string text)
+        private static byte[] HmacMd5(string hashKey, string text)
         {
-            HMACMD5 kMd5 = new HMACMD5(Encoding.Default.GetBytes(text));
-
+            var kMd5 = new HMACMD5(Encoding.Default.GetBytes(text));
             return kMd5.ComputeHash(Encoding.ASCII.GetBytes(hashKey));
         }
 
@@ -185,7 +184,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// </summary>
         public override bool RequireSSL
         {
-            get { return _requireSSL; }
+            get { return _requireSsl; }
         }
 
         /// <summary>
@@ -210,8 +209,8 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         {
             var retVal = new UserInfoEventArgs(userName);
 
-            if (this.GetUserInfo != null)
-                this.GetUserInfo(this, retVal);
+            if (GetUserInfo != null)
+                GetUserInfo(this, retVal);
 
             return retVal;
         }

@@ -6,12 +6,12 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// <summary>
     /// This class implements <b>XOAUTH2</b> authentication.
     /// </summary>
-    public class ClientXOAuth2 : ClientMechanism
+    public class ClientXoAuth2 : ClientMechanism
     {
-        private bool m_IsCompleted = false;
-        private int m_State = 0;
-        private string m_UserName = null;
-        private string m_AccessToken = null;
+        private readonly string _userName;
+        private readonly string _accessToken;
+        private bool _isCompleted = false;
+        private int _state = 0;
 
         /// <summary>
         /// Default constructor.
@@ -20,31 +20,18 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <param name="accessToken">The access Token.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>accessToken</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public ClientXOAuth2(string userName, string accessToken)
+        public ClientXoAuth2(string userName, string accessToken)
         {
-            if (userName == null)
-            {
-                throw new ArgumentNullException("userName");
-            }
-            if (userName == "")
+            if (string.IsNullOrEmpty(userName))
             {
                 throw new ArgumentException("Argument 'userName' value must be specified.", "userName");
             }
-            if (accessToken == null)
-            {
-                throw new ArgumentNullException("accessToken");
-            }
-            if (accessToken == "")
-            {
+            if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentException("Argument 'accessToken' value must be specified.", "accessToken");
-            }
 
-            m_UserName = userName;
-            m_AccessToken = accessToken;
+            _userName = userName;
+            _accessToken = accessToken;
         }
-
-
-        #region method Continue
 
         /// <summary>
         /// Continues authentication process.
@@ -55,36 +42,25 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
         public override byte[] Continue(byte[] serverResponse)
         {
-            if (m_IsCompleted)
-            {
+            if (_isCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
-            }
 
-            if (m_State == 0)
+            if (_state == 0)
             {
-                m_IsCompleted = true;
-
-                string initialClientResponse = "user=" + m_UserName + "\u0001auth=Bearer " + m_AccessToken + "\u0001\u0001";
-
+                _isCompleted = true;
+                var initialClientResponse = "user=" + _userName + "\u0001auth=Bearer " + _accessToken + "\u0001\u0001";
                 return Encoding.UTF8.GetBytes(initialClientResponse);
             }
-            else
-            {
-                return null;
-            }
+            
+            return null;
         }
-
-        #endregion
-
-
-        #region Properties implementation
 
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
         public override bool IsCompleted
         {
-            get { return m_IsCompleted; }
+            get { return _isCompleted; }
         }
 
         /// <summary>
@@ -100,7 +76,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
         }
 
         /// <summary>
@@ -110,7 +86,5 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         {
             get { return true; }
         }
-
-        #endregion
     }
 }

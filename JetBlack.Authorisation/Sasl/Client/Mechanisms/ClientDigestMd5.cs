@@ -8,13 +8,13 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// </summary>
     public class ClientDigestMd5 : ClientMechanism
     {
-        private bool _isCompleted = false;
-        private int _state = 0;
-        private string _protocol = null;
-        private string _serverName = null;
-        private string _userName = null;
-        private string _password = null;
-        private DigestMd5Response _response = null;
+        private readonly string _protocol;
+        private readonly string _serverName;
+        private readonly string _userName;
+        private readonly string _password;
+        private bool _isCompleted;
+        private int _state;
+        private DigestMd5Response _response;
 
         /// <summary>
         /// Default constructor.

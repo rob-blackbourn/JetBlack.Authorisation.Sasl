@@ -8,10 +8,11 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// </summary>
     public class ClientPlain : ClientMechanism
     {
-        private bool m_IsCompleted = false;
-        private int m_State = 0;
-        private string m_UserName = null;
-        private string m_Password = null;
+        private readonly string _userName;
+        private readonly string _password;
+
+        private bool _isCompleted;
+        private int _state;
 
         /// <summary>
         /// Default constructor.
@@ -22,25 +23,14 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
         public ClientPlain(string userName, string password)
         {
-            if (userName == null)
-            {
-                throw new ArgumentNullException("userName");
-            }
-            if (userName == string.Empty)
-            {
+            if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'username' value must be specified.", "userName");
-            }
             if (password == null)
-            {
                 throw new ArgumentNullException("password");
-            }
 
-            m_UserName = userName;
-            m_Password = password;
+            _userName = userName;
+            _password = password;
         }
-
-
-        #region method Continue
 
         /// <summary>
         /// Continues authentication process.
@@ -50,7 +40,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
         public override byte[] Continue(byte[] serverResponse)
         {
-            if (m_IsCompleted)
+            if (_isCompleted)
             {
                 throw new InvalidOperationException("Authentication is completed.");
             }
@@ -76,12 +66,12 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                     S: a002 OK "Authenticated"
             */
 
-            if (m_State == 0)
+            if (_state == 0)
             {
-                m_State++;
-                m_IsCompleted = true;
+                _state++;
+                _isCompleted = true;
 
-                return Encoding.UTF8.GetBytes("\0" + m_UserName + "\0" + m_Password);
+                return Encoding.UTF8.GetBytes("\0" + _userName + "\0" + _password);
             }
             else
             {
@@ -89,17 +79,12 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
             }
         }
 
-        #endregion
-
-
-        #region Properties implementation
-
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
         public override bool IsCompleted
         {
-            get { return m_IsCompleted; }
+            get { return _isCompleted; }
         }
 
         /// <summary>
@@ -115,7 +100,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
         }
 
         /// <summary>
@@ -125,7 +110,5 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         {
             get { return true; }
         }
-
-        #endregion
     }
 }

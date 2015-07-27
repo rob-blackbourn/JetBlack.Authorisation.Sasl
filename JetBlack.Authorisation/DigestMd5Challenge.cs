@@ -151,10 +151,10 @@ namespace JetBlack.Authorisation
         public string ToChallenge()
         {
             var retVal = new StringBuilder();
-            retVal.Append("realm=\"" + Net_Utils.ArrayToString(Realm, ",") + "\"");
+            retVal.Append("realm=\"" + NetUtils.ArrayToString(Realm, ",") + "\"");
             retVal.Append(",nonce=\"" + Nonce + "\"");
             if (QopOptions != null)
-                retVal.Append(",qop=\"" + Net_Utils.ArrayToString(QopOptions, ",") + "\"");
+                retVal.Append(",qop=\"" + NetUtils.ArrayToString(QopOptions, ",") + "\"");
             if (IsStale)
                 retVal.Append(",stale=true");
             if (Maxbuf > 0)

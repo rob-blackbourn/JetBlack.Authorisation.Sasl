@@ -11,15 +11,13 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// </summary>
     public class ClientNtlm : ClientMechanism
     {
-        #region class MessageType1
-
         /// <summary>
         /// This class represents NTLM type 1 message.
         /// </summary>
         private class MessageType1
         {
-            private string m_Domain = null;
-            private string m_Host = null;
+            private readonly string _domain;
+            private readonly string _host;
 
             /// <summary>
             /// Default constructor.
@@ -30,20 +28,13 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
             public MessageType1(string domain, string host)
             {
                 if (domain == null)
-                {
                     throw new ArgumentNullException("domain");
-                }
                 if (host == null)
-                {
                     throw new ArgumentNullException("host");
-                }
 
-                m_Domain = domain;
-                m_Host = host;
+                _domain = domain;
+                _host = host;
             }
-
-
-            #region method ToByte
 
             /// <summary>
             /// Converts this to binary NTML type 1 message.
@@ -105,10 +96,10 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 */
 
 
-                short dom_len = (short)m_Domain.Length;
-                short host_len = (short)m_Host.Length;
+                var domainLength = (short)_domain.Length;
+                var hostLength = (short)_host.Length;
 
-                byte[] data = new byte[32 + dom_len + host_len];
+                var data = new byte[32 + domainLength + hostLength];
 
                 data[0] = (byte)'N';
                 data[1] = (byte)'T';
@@ -128,44 +119,38 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 data[14] = 0;
                 data[15] = 0;
 
-                short dom_off = (short)(32 + host_len);
+                var domOff = (short)(32 + hostLength);
 
-                data[16] = (byte)dom_len;
-                data[17] = (byte)(dom_len >> 8);
+                data[16] = (byte)domainLength;
+                data[17] = (byte)(domainLength >> 8);
                 data[18] = data[16];
                 data[19] = data[17];
-                data[20] = (byte)dom_off;
-                data[21] = (byte)(dom_off >> 8);
+                data[20] = (byte)domOff;
+                data[21] = (byte)(domOff >> 8);
 
-                data[24] = (byte)host_len;
-                data[25] = (byte)(host_len >> 8);
+                data[24] = (byte)hostLength;
+                data[25] = (byte)(hostLength >> 8);
                 data[26] = data[24];
                 data[27] = data[25];
                 data[28] = 0x20;
                 data[29] = 0x00;
 
-                byte[] host = Encoding.ASCII.GetBytes(m_Host.ToUpper(CultureInfo.InvariantCulture));
+                var host = Encoding.ASCII.GetBytes(_host.ToUpper(CultureInfo.InvariantCulture));
                 Buffer.BlockCopy(host, 0, data, 32, host.Length);
 
-                byte[] domain = Encoding.ASCII.GetBytes(m_Domain.ToUpper(CultureInfo.InvariantCulture));
-                Buffer.BlockCopy(domain, 0, data, dom_off, domain.Length);
+                var domain = Encoding.ASCII.GetBytes(_domain.ToUpper(CultureInfo.InvariantCulture));
+                Buffer.BlockCopy(domain, 0, data, domOff, domain.Length);
 
                 return data;
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region class MessageType2
 
         /// <summary>
         /// This class represents NTLM type 2 message.
         /// </summary>
         private class MessageType2
         {
-            private byte[] m_Nonce = null;
+            private readonly byte[] _nonce;
 
             /// <summary>
             /// Default constructor.
@@ -173,22 +158,15 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
             /// <param name="nonce">NTLM 8 byte nonce.</param>
             /// <exception cref="ArgumentNullException">Is raised when <b>nonce</b> is null reference.</exception>
             /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-            public MessageType2(byte[] nonce)
+            private MessageType2(byte[] nonce)
             {
                 if (nonce == null)
-                {
                     throw new ArgumentNullException("nonce");
-                }
                 if (nonce.Length != 8)
-                {
                     throw new ArgumentException("Argument 'nonce' value must be 8 bytes value.", "nonce");
-                }
 
-                m_Nonce = nonce;
+                _nonce = nonce;
             }
-
-
-            #region static method Parse
 
             /// <summary>
             /// Parses NTLM type 2 message.
@@ -241,42 +219,31 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                          +-------+-------+-------+-------+
                 */
 
-                byte[] nonce = new byte[8];
+                var nonce = new byte[8];
                 Buffer.BlockCopy(data, 24, nonce, 0, 8);
 
                 return new MessageType2(nonce);
             }
-
-            #endregion
-
-
-            #region Properties implementation
 
             /// <summary>
             /// Gets nonce.
             /// </summary>
             public byte[] Nonce
             {
-                get { return m_Nonce; }
+                get { return _nonce; }
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region class MessageType3
 
         /// <summary>
         /// This class represents NTLM type 3 message.
         /// </summary>
         private class MessageType3
         {
-            private string m_Domain = null;
-            private string m_User = null;
-            private string m_Host = null;
-            private byte[] m_LM = null;
-            private byte[] m_NT = null;
+            private readonly string _domain;
+            private readonly string _user;
+            private readonly string _host;
+            private readonly byte[] _lanManagerResponse;
+            private readonly byte[] _ntResponse;
 
             /// <summary>
             /// Default constructor.
@@ -284,41 +251,28 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
             /// <param name="domain">Domain name.</param>
             /// <param name="user">User name.</param>
             /// <param name="host">Host name.</param>
-            /// <param name="lm">Lan Manager response.</param>
-            /// <param name="nt">NT response.</param>
+            /// <param name="lanManagerResponse">Lan Manager response.</param>
+            /// <param name="ntResponse">NT response.</param>
             /// <exception cref="ArgumentNullException">Is raised when <b>domain</b>,<b>user</b>,<b>host</b>,<b>lm</b> or <b>nt</b> is null reference.</exception>
-            public MessageType3(string domain, string user, string host, byte[] lm, byte[] nt)
+            public MessageType3(string domain, string user, string host, byte[] lanManagerResponse, byte[] ntResponse)
             {
                 if (domain == null)
-                {
                     throw new ArgumentNullException("domain");
-                }
                 if (user == null)
-                {
                     throw new ArgumentNullException("user");
-                }
                 if (host == null)
-                {
                     throw new ArgumentNullException("host");
-                }
-                if (lm == null)
-                {
-                    throw new ArgumentNullException("lm");
-                }
-                if (nt == null)
-                {
-                    throw new ArgumentNullException("nt");
-                }
+                if (lanManagerResponse == null)
+                    throw new ArgumentNullException("lanManagerResponse");
+                if (ntResponse == null)
+                    throw new ArgumentNullException("ntResponse");
 
-                m_Domain = domain;
-                m_User = user;
-                m_Host = host;
-                m_LM = lm;
-                m_NT = nt;
+                _domain = domain;
+                _user = user;
+                _host = host;
+                _lanManagerResponse = lanManagerResponse;
+                _ntResponse = ntResponse;
             }
-
-
-            #region method ToByte
 
             /// <summary>
             /// Converts this to binary NTML type 3 message.
@@ -430,11 +384,11 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                              +-------+-------+-------+-------+
                 */
 
-                byte[] domain = Encoding.Unicode.GetBytes(m_Domain.ToUpper(CultureInfo.InvariantCulture));
-                byte[] user = Encoding.Unicode.GetBytes(m_User);
-                byte[] host = Encoding.Unicode.GetBytes(m_Host.ToUpper(CultureInfo.InvariantCulture));
+                var domain = Encoding.Unicode.GetBytes(_domain.ToUpper(CultureInfo.InvariantCulture));
+                var user = Encoding.Unicode.GetBytes(_user);
+                var host = Encoding.Unicode.GetBytes(_host.ToUpper(CultureInfo.InvariantCulture));
 
-                byte[] data = new byte[64 + domain.Length + user.Length + host.Length + 24 + 24];
+                var data = new byte[64 + domain.Length + user.Length + host.Length + 24 + 24];
 
                 data[0] = (byte)'N';
                 data[1] = (byte)'T';
@@ -450,7 +404,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 data[11] = 0;
 
                 // LM response 
-                short lmresp_off = (short)(64 + domain.Length + user.Length + host.Length);
+                var lmresp_off = (short)(64 + domain.Length + user.Length + host.Length);
                 data[12] = (byte)0x18;
                 data[13] = (byte)0x00;
                 data[14] = (byte)0x18;
@@ -511,16 +465,12 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 Buffer.BlockCopy(domain, 0, data, dom_off, domain.Length);
                 Buffer.BlockCopy(user, 0, data, uname_off, user.Length);
                 Buffer.BlockCopy(host, 0, data, host_off, host.Length);
-                Buffer.BlockCopy(m_LM, 0, data, lmresp_off, 24);
-                Buffer.BlockCopy(m_NT, 0, data, ntresp_off, 24);
+                Buffer.BlockCopy(_lanManagerResponse, 0, data, lmresp_off, 24);
+                Buffer.BlockCopy(_ntResponse, 0, data, ntresp_off, 24);
 
                 return data;
             }
-
-            #endregion
         }
-
-        #endregion
 
         #region class NTLM_Utils
 
@@ -685,11 +635,12 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
 
         #endregion
 
-        private bool m_IsCompleted = false;
-        private int m_State = 0;
-        private string m_Domain = null;
-        private string m_UserName = null;
-        private string m_Password = null;
+        private readonly string _domain;
+        private readonly string _userName;
+        private readonly string _password;
+
+        private bool _isCompleted;
+        private int _state;
 
         /// <summary>
         /// Default constructor.
@@ -700,6 +651,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="ArgumentNullException">Is raised when <b>domain</b>,<b>userName</b> or <b>passowrd</b> is null reference.</exception>
         public ClientNtlm(string domain, string userName, string password)
         {
+            _userName = null;
             if (domain == null)
             {
                 throw new ArgumentNullException("domain");
@@ -713,9 +665,9 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                 throw new ArgumentNullException("password");
             }
 
-            m_Domain = domain;
-            m_UserName = userName;
-            m_Password = password;
+            _domain = domain;
+            _userName = userName;
+            _password = password;
         }
 
 
@@ -729,7 +681,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
         public override byte[] Continue(byte[] serverResponse)
         {
-            if (m_IsCompleted)
+            if (_isCompleted)
             {
                 throw new InvalidOperationException("Authentication is completed.");
             }
@@ -744,25 +696,25 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
                     S : 235 AUTH OK 
             */
 
-            if (m_State == 0)
+            if (_state == 0)
             {
-                m_State++;
+                _state++;
 
-                return new MessageType1(m_Domain, Environment.MachineName).ToByte();
+                return new MessageType1(_domain, Environment.MachineName).ToByte();
             }
-            else if (m_State == 1)
+            else if (_state == 1)
             {
-                m_State++;
-                m_IsCompleted = true;
+                _state++;
+                _isCompleted = true;
 
                 byte[] nonce = MessageType2.Parse(serverResponse).Nonce;
 
                 return new MessageType3(
-                    m_Domain,
-                    m_UserName,
+                    _domain,
+                    _userName,
                     Environment.MachineName,
-                    NTLM_Utils.CalculateLM(nonce, m_Password),
-                    NTLM_Utils.CalculateNT(nonce, m_Password)
+                    NTLM_Utils.CalculateLM(nonce, _password),
+                    NTLM_Utils.CalculateNT(nonce, _password)
                 ).ToByte();
             }
             else
@@ -781,7 +733,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override bool IsCompleted
         {
-            get { return m_IsCompleted; }
+            get { return _isCompleted; }
         }
 
         /// <summary>
@@ -797,7 +749,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
         }
 
         /// <summary>

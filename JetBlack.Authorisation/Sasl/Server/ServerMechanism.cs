@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace JetBlack.Authorisation.Sasl.Server
 {
@@ -7,7 +8,7 @@ namespace JetBlack.Authorisation.Sasl.Server
     /// </summary>
     public abstract class ServerMechanism
     {
-        private Dictionary<string, object> _tags = null;
+        private readonly Dictionary<string, object> _tags = null;
 
         /// <summary>
         /// Resets any authentication state data.

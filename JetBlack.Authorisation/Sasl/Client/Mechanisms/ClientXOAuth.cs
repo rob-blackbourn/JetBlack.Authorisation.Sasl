@@ -6,12 +6,12 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
     /// <summary>
     /// This class implements <b>XOAUTH</b> authentication.
     /// </summary>
-    public class ClientXOAuth : ClientMechanism
+    public class ClientXoAuth : ClientMechanism
     {
-        private bool m_IsCompleted = false;
-        private int m_State = 0;
-        private string m_UserName = null;
-        private string m_AuthString = null;
+        private readonly string _userName;
+        private readonly string _authString;
+        private bool _isCompleted = false;
+        private int _state = 0;
 
         /// <summary>
         /// Default constructor.
@@ -20,31 +20,16 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <param name="authString">OAUTH authentication string. For example you can use <see cref="GmailOAuth1.GetXoAuthStringForImap"/> to get valid string.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>authString</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is riased when any of the arguments has invalid value.</exception>
-        public ClientXOAuth(string userName, string authString)
+        public ClientXoAuth(string userName, string authString)
         {
-            if (userName == null)
-            {
-                throw new ArgumentNullException("userName");
-            }
-            if (userName == "")
-            {
+            if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'userName' value must be specified.", "userName");
-            }
-            if (authString == null)
-            {
-                throw new ArgumentNullException("authString");
-            }
-            if (authString == "")
-            {
+            if (string.IsNullOrEmpty(authString))
                 throw new ArgumentException("Argument 'authString' value must be specified.", "authString");
-            }
 
-            m_UserName = userName;
-            m_AuthString = authString;
+            _userName = userName;
+            _authString = authString;
         }
-
-
-        #region method Continue
 
         /// <summary>
         /// Continues authentication process.
@@ -55,32 +40,24 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
         public override byte[] Continue(byte[] serverResponse)
         {
-            if (m_IsCompleted)
-            {
+            if (_isCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
-            }
 
-            if (m_State == 0)
+            if (_state == 0)
             {
-                m_IsCompleted = true;
-
-                return Encoding.UTF8.GetBytes(m_AuthString);
+                _isCompleted = true;
+                return Encoding.UTF8.GetBytes(_authString);
             }
 
             return null;
         }
-
-        #endregion
-
-
-        #region Properties implementation
 
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
         public override bool IsCompleted
         {
-            get { return m_IsCompleted; }
+            get { return _isCompleted; }
         }
 
         /// <summary>
@@ -96,7 +73,7 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         /// </summary>
         public override string UserName
         {
-            get { return m_UserName; }
+            get { return _userName; }
         }
 
         /// <summary>
@@ -106,7 +83,5 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
         {
             get { return true; }
         }
-
-        #endregion
     }
 }

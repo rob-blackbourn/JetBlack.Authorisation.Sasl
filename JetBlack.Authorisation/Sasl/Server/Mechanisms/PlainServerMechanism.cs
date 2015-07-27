@@ -125,8 +125,6 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// </summary>
         public event EventHandler<AuthenticateEventArgs> Authenticate = null;
 
-        #region method OnAuthenticate
-
         /// <summary>
         /// Raises <b>Authenticate</b> event.
         /// </summary>
@@ -136,12 +134,10 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// <returns>Returns authentication result.</returns>
         private AuthenticateEventArgs OnAuthenticate(string authorizationID, string userName, string password)
         {
-            AuthenticateEventArgs retVal = new AuthenticateEventArgs(authorizationID, userName, password);
+            var retVal = new AuthenticateEventArgs(authorizationID, userName, password);
 
-            if (this.Authenticate != null)
-            {
-                this.Authenticate(this, retVal);
-            }
+            if (Authenticate != null)
+                Authenticate(this, retVal);
 
             return retVal;
         }

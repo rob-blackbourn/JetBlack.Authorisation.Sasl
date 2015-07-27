@@ -190,7 +190,7 @@ namespace JetBlack.Authorisation
             }
             else if (this.Algorithm.ToLower() == "md5-sess")
             {
-                a1 = Net_Utils.ComputeMd5(userName + ":" + this.Realm + ":" + password, false) + ":" + this.Nonce + ":" + this.CNonce;
+                a1 = NetUtils.ComputeMd5(userName + ":" + this.Realm + ":" + password, false) + ":" + this.Nonce + ":" + this.CNonce;
             }
             else
             {
@@ -210,12 +210,12 @@ namespace JetBlack.Authorisation
             // qop present
             if (!string.IsNullOrEmpty(this.Qop))
             {
-                return Net_Utils.ComputeMd5(Net_Utils.ComputeMd5(a1, true) + ":" + this.Nonce + ":" + this.NonceCount.ToString("x8") + ":" + this.CNonce + ":" + this.Qop + ":" + Net_Utils.ComputeMd5(a2, true), true);
+                return NetUtils.ComputeMd5(NetUtils.ComputeMd5(a1, true) + ":" + this.Nonce + ":" + this.NonceCount.ToString("x8") + ":" + this.CNonce + ":" + this.Qop + ":" + NetUtils.ComputeMd5(a2, true), true);
             }
             // qop not present
             else
             {
-                return Net_Utils.ComputeMd5(Net_Utils.ComputeMd5(a1, true) + ":" + this.Nonce + ":" + Net_Utils.ComputeMd5(a2, true), true);
+                return NetUtils.ComputeMd5(NetUtils.ComputeMd5(a1, true) + ":" + this.Nonce + ":" + NetUtils.ComputeMd5(a2, true), true);
             }
         }
 
@@ -484,7 +484,7 @@ namespace JetBlack.Authorisation
 
         private string H(string value)
         {
-            return Net_Utils.ComputeMd5(value, true);
+            return NetUtils.ComputeMd5(value, true);
         }
 
         #endregion

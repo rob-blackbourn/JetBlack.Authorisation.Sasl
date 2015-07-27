@@ -1,4 +1,6 @@
-﻿namespace JetBlack.Authorisation.Sasl.Client
+﻿using System;
+
+namespace JetBlack.Authorisation.Sasl.Client
 {
     /// <summary>
     /// This base class for client SASL authentication mechanisms. Defined in RFC 4422.
