@@ -64,6 +64,7 @@
     <Compile Include="Sasl\Server\Mechanisms\PlainServerMechanism.cs" />
     <Compile Include="Utils\Base64.cs" />
     <Compile Include="Utils\ElapsedEventHandler.cs" />
+    <Compile Include="Utils\KeyValuePair.cs" />
     <Compile Include="Utils\Net_Utils.cs" />
     <Compile Include="Utils\ParseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

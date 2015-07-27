@@ -57,20 +57,17 @@ namespace JetBlack.Authorisation.Sasl.Client.Mechanisms
             if (_state == 0)
             {
                 ++_state;
-
                 return Encoding.UTF8.GetBytes(_userName);
             }
-            else if (_state == 1)
+            
+            if (_state == 1)
             {
                 ++_state;
                 _isCompleted = true;
-
                 return Encoding.UTF8.GetBytes(_password);
             }
-            else
-            {
-                throw new InvalidOperationException("Authentication is completed.");
-            }
+            
+            throw new InvalidOperationException("Authentication is completed.");
         }
 
         /// <summary>

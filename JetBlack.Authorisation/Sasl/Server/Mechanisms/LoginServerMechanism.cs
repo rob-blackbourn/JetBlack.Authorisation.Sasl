@@ -8,20 +8,20 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
     /// </summary>
     public class LoginServerMechanism : ServerMechanism
     {
-        private bool _isCompleted = false;
-        private bool _isAuthenticated = false;
-        private bool _requireSSL = false;
-        private string _userName = null;
-        private string _password = null;
-        private int _state = 0;
+        private bool _isCompleted;
+        private bool _isAuthenticated;
+        private readonly bool _requireSsl;
+        private string _userName;
+        private string _password;
+        private int _state;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="requireSSL">Specifies if this mechanism is available to SSL connections only.</param>
-        public LoginServerMechanism(bool requireSSL)
+        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
+        public LoginServerMechanism(bool requireSsl)
         {
-            _requireSSL = requireSSL;
+            _requireSsl = requireSsl;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// Continues authentication process.
         /// </summary>
         /// <param name="clientResponse">Client sent SASL response.</param>
-        /// <returns>Retunrns challange response what must be sent to client or null if authentication has completed.</returns>
+        /// <returns>Returns challange response what must be sent to client or null if authentication has completed.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>clientResponse</b> is null reference.</exception>
         /// <remarks>
         /// RFC none.
@@ -114,7 +114,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// </summary>
         public override bool RequireSSL
         {
-            get { return _requireSSL; }
+            get { return _requireSsl; }
         }
 
         /// <summary>
@@ -133,16 +133,16 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// <summary>
         /// Raises <b>Authenticate</b> event.
         /// </summary>
-        /// <param name="authorizationID">Authorization ID.</param>
+        /// <param name="authorizationId">Authorization ID.</param>
         /// <param name="userName">User name.</param>
         /// <param name="password">Password.</param>
         /// <returns>Returns authentication result.</returns>
-        private AuthenticateEventArgs OnAuthenticate(string authorizationID, string userName, string password)
+        private AuthenticateEventArgs OnAuthenticate(string authorizationId, string userName, string password)
         {
-            var retVal = new AuthenticateEventArgs(authorizationID, userName, password);
+            var retVal = new AuthenticateEventArgs(authorizationId, userName, password);
 
-            if (this.Authenticate != null)
-                this.Authenticate(this, retVal);
+            if (Authenticate != null)
+                Authenticate(this, retVal);
 
             return retVal;
         }

@@ -6,23 +6,23 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
     /// <summary>
     /// Implements "DIGEST-MD5" authenticaiton. Defined in RFC 2831.
     /// </summary>
-    public class DigestMd5ServerMechanism_ : ServerMechanism
+    public class DigestMd5ServerMechanism : ServerMechanism
     {
-        private bool _isCompleted = false;
-        private bool _isAuthenticated = false;
-        private bool _requireSSL = false;
-        private string _realm = "";
-        private string _nonce = "";
-        private string _userName = "";
-        private int _state = 0;
+        private bool _isCompleted;
+        private bool _isAuthenticated;
+        private readonly bool _requireSsl;
+        private string _realm = string.Empty;
+        private readonly string _nonce;
+        private string _userName = string.Empty;
+        private int _state;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="requireSSL">Specifies if this mechanism is available to SSL connections only.</param>
-        public DigestMd5ServerMechanism_(bool requireSSL)
+        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
+        public DigestMd5ServerMechanism(bool requireSsl)
         {
-            _requireSSL = requireSSL;
+            _requireSsl = requireSsl;
             _nonce = HttpDigest.CreateNonce();
         }
 
@@ -47,12 +47,20 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// RFC 2831.
         /// The base64-decoded version of the SASL exchange is:
         ///
-        /// S: realm="elwood.innosoft.com",nonce="OA6MG9tEQGm2hh",qop="auth",
-        ///    algorithm=md5-sess,charset=utf-8
-        /// C: charset=utf-8,username="chris",realm="elwood.innosoft.com",
-        ///    nonce="OA6MG9tEQGm2hh",nc=00000001,cnonce="OA6MHXh6VqTrRk",
+        /// S: realm="elwood.innosoft.com",
+        ///    nonce="OA6MG9tEQGm2hh",
+        ///    qop="auth",
+        ///    algorithm=md5-sess,
+        ///    charset=utf-8
+        /// C: charset=utf-8,
+        ///    username="chris",
+        ///    realm="elwood.innosoft.com",
+        ///    nonce="OA6MG9tEQGm2hh",
+        ///    nc=00000001,
+        ///    cnonce="OA6MHXh6VqTrRk",
         ///    digest-uri="imap/elwood.innosoft.com",
-        ///    response=d388dad90d4bbd760a152321f2143af7,qop=auth
+        ///    response=d388dad90d4bbd760a152321f2143af7,
+        ///    qop=auth
         /// S: rspauth=ea40f60335c427b5527b84dbabcdfffd
         /// C: 
         /// S: ok
@@ -68,7 +76,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
             {
                 ++_state;
 
-                DigestMd5Challenge callenge = new DigestMd5Challenge(new string[] { _realm }, _nonce, new string[] { "auth" }, false);
+                var callenge = new DigestMd5Challenge(new[] { _realm }, _nonce, new[] { "auth" }, false);
 
                 return Encoding.UTF8.GetBytes(callenge.ToChallenge());
             }
@@ -78,16 +86,14 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
 
                 try
                 {
-                    DigestMd5Response response = DigestMd5Response.Parse(Encoding.UTF8.GetString(clientResponse));
+                    var response = DigestMd5Response.Parse(Encoding.UTF8.GetString(clientResponse));
 
                     // Check realm and nonce value.
                     if (_realm != response.Realm || _nonce != response.Nonce)
-                    {
                         return Encoding.UTF8.GetBytes("rspauth=\"\"");
-                    }
 
                     _userName = response.UserName;
-                    UserInfoEventArgs result = OnGetUserInfo(response.UserName);
+                    var result = OnGetUserInfo(response.UserName);
                     if (result.UserExists)
                     {
                         if (response.Authenticate(result.UserName, result.Password))
@@ -142,7 +148,7 @@ namespace JetBlack.Authorisation.Sasl.Server.Mechanisms
         /// </summary>
         public override bool RequireSSL
         {
-            get { return _requireSSL; }
+            get { return _requireSsl; }
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace JetBlack.Authorisation.Utils
@@ -9,10 +8,8 @@ namespace JetBlack.Authorisation.Utils
     /// <summary>
     /// This class provides usefull text methods.
     /// </summary>
-    public class TextUtils
+    public static class TextUtils
     {
-        #region static method QuoteString
-
         /// <summary>
         /// Qoutes string and escapes fishy('\',"') chars.
         /// </summary>
@@ -20,38 +17,32 @@ namespace JetBlack.Authorisation.Utils
         /// <returns></returns>
         public static string QuoteString(string text)
         {
+            if (text == null)
+                return "\"\"";
+
             // String is already quoted-string.
-            if (text != null && text.StartsWith("\"") && text.EndsWith("\""))
-            {
+            if (text.StartsWith("\"") && text.EndsWith("\""))
                 return text;
-            }
 
-            StringBuilder retVal = new StringBuilder();
-
-            for (int i = 0; i < text.Length; i++)
+            var s = new StringBuilder();
+            foreach (var c in text)
             {
-                char c = text[i];
-
-                if (c == '\\')
+                switch (c)
                 {
-                    retVal.Append("\\\\");
-                }
-                else if (c == '\"')
-                {
-                    retVal.Append("\\\"");
-                }
-                else
-                {
-                    retVal.Append(c);
+                    case '\\':
+                        s.Append("\\\\");
+                        break;
+                    case '\"':
+                        s.Append("\\\"");
+                        break;
+                    default:
+                        s.Append(c);
+                        break;
                 }
             }
 
-            return "\"" + retVal.ToString() + "\"";
+            return string.Concat('"', s, '"');
         }
-
-        #endregion
-
-        #region static method UnQuoteString
 
         /// <summary>
         /// Unquotes and unescapes escaped chars specified text. For example "xxx" will become to 'xxx', "escaped quote \"", will become to escaped 'quote "'.
@@ -64,61 +55,44 @@ namespace JetBlack.Authorisation.Utils
             int endPosInText = text.Length;
 
             //--- Trim. We can't use standard string.Trim(), it's slow. ----//
-            for (int i = 0; i < endPosInText; i++)
+            foreach (var c in text)
             {
-                char c = text[i];
                 if (c == ' ' || c == '\t')
-                {
-                    startPosInText++;
-                }
+                    ++startPosInText;
                 else
-                {
                     break;
-                }
             }
-            for (int i = endPosInText - 1; i > 0; i--)
+
+            foreach (var c in text)
             {
-                char c = text[i];
                 if (c == ' ' || c == '\t')
-                {
-                    endPosInText--;
-                }
+                    --endPosInText;
                 else
-                {
                     break;
-                }
             }
             //--------------------------------------------------------------//
 
             // All text trimmed
-            if ((endPosInText - startPosInText) <= 0)
-            {
-                return "";
-            }
+            if (endPosInText - startPosInText <= 0)
+                return string.Empty;
 
             // Remove starting and ending quotes.         
             if (text[startPosInText] == '\"')
-            {
-                startPosInText++;
-            }
+                ++startPosInText;
             if (text[endPosInText - 1] == '\"')
-            {
-                endPosInText--;
-            }
+                --endPosInText;
 
             // Just '"'
             if (endPosInText == startPosInText - 1)
-            {
-                return "";
-            }
+                return string.Empty;
 
-            char[] chars = new char[endPosInText - startPosInText];
+            var chars = new char[endPosInText - startPosInText];
 
             int posInChars = 0;
             bool charIsEscaped = false;
-            for (int i = startPosInText; i < endPosInText; i++)
+            for (int i = startPosInText; i < endPosInText; ++i)
             {
-                char c = text[i];
+                var c = text[i];
 
                 // Escaping char
                 if (!charIsEscaped && c == '\\')
@@ -145,10 +119,6 @@ namespace JetBlack.Authorisation.Utils
             return new string(chars, 0, posInChars);
         }
 
-        #endregion
-
-        #region static method EscapeString
-
         /// <summary>
         /// Escapes specified chars in the specified string.
         /// </summary>
@@ -159,28 +129,22 @@ namespace JetBlack.Authorisation.Utils
             // Create worst scenario buffer, assume all chars must be escaped
             char[] buffer = new char[text.Length * 2];
             int nChars = 0;
-            foreach (char c in text)
+            foreach (var c in text)
             {
-                foreach (char escapeChar in charsToEscape)
+                foreach (var escapeChar in charsToEscape)
                 {
                     if (c == escapeChar)
                     {
-                        buffer[nChars] = '\\';
-                        nChars++;
+                        buffer[nChars++] = '\\';
                         break;
                     }
                 }
 
-                buffer[nChars] = c;
-                nChars++;
+                buffer[nChars++] = c;
             }
 
             return new string(buffer, 0, nChars);
         }
-
-        #endregion
-
-        #region static method UnEscapeString
 
         /// <summary>
         /// Unescapes all escaped chars.
@@ -190,10 +154,10 @@ namespace JetBlack.Authorisation.Utils
         public static string UnEscapeString(string text)
         {
             // Create worst scenarion buffer, non of the chars escaped.
-            char[] buffer = new char[text.Length];
+            var buffer = new char[text.Length];
             int nChars = 0;
             bool escapedCahr = false;
-            foreach (char c in text)
+            foreach (var c in text)
             {
                 if (!escapedCahr && c == '\\')
                 {
@@ -201,19 +165,13 @@ namespace JetBlack.Authorisation.Utils
                 }
                 else
                 {
-                    buffer[nChars] = c;
-                    nChars++;
+                    buffer[nChars++] = c;
                     escapedCahr = false;
                 }
             }
 
             return new string(buffer, 0, nChars);
         }
-
-        #endregion
-
-
-        #region static method SplitQuotedString
 
         /// <summary>
         /// Splits string into string arrays. This split method won't split qouted strings, but only text outside of qouted string.
@@ -257,7 +215,7 @@ namespace JetBlack.Authorisation.Utils
                 throw new ArgumentNullException("text");
             }
 
-            List<string> splitParts = new List<string>();  // Holds splitted parts
+            var splitParts = new List<string>();  // Holds splitted parts
             int startPos = 0;
             bool inQuotedString = false;               // Holds flag if position is quoted string or not
             char lastChar = '0';
@@ -317,11 +275,6 @@ namespace JetBlack.Authorisation.Utils
             return splitParts.ToArray();
         }
 
-        #endregion
-
-
-        #region method QuotedIndexOf
-
         /// <summary>
         /// Gets first index of specified char. The specified char in quoted string is skipped.
         /// Returns -1 if specified char doesn't exist.
@@ -353,10 +306,6 @@ namespace JetBlack.Authorisation.Utils
             return retVal;
         }
 
-        #endregion
-
-
-        #region static method SplitString
 
         /// <summary>
         /// Splits string into string arrays.
@@ -392,11 +341,6 @@ namespace JetBlack.Authorisation.Utils
             return retVal;
         }
 
-        #endregion
-
-
-        #region static method IsToken
-
         /// <summary>
         /// Gets if specified string is valid "token" value.
         /// </summary>
@@ -406,9 +350,7 @@ namespace JetBlack.Authorisation.Utils
         public static bool IsToken(string value)
         {
             if (value == null)
-            {
-                throw new ArgumentNullException(value);
-            }
+                throw new ArgumentNullException("value");
 
             /* This syntax is taken from rfc 3261, but token must be universal so ... .
                 token    =  1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'" / "~" )
@@ -417,7 +359,7 @@ namespace JetBlack.Authorisation.Utils
                 DIGIT    =  %x30-39             ; 0-9
             */
 
-            char[] tokenChars = new char[] { '-', '.', '!', '%', '*', '_', '+', '`', '\'', '~' };
+            char[] tokenChars = { '-', '.', '!', '%', '*', '_', '+', '`', '\'', '~' };
             foreach (char c in value)
             {
                 // We don't have letter or digit, so we only may have token char.
@@ -441,7 +383,5 @@ namespace JetBlack.Authorisation.Utils
 
             return true;
         }
-
-        #endregion
     }
 }
