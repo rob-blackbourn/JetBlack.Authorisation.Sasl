@@ -1,8 +1,9 @@
 ﻿namespace JetBlack.Authorisation.Sasl
 {
-    public class UserInfo
+    public struct UserInfo
     {
         public UserInfo(bool userExists, string userName, string password)
+            : this()
         {
             UserExists = userExists;
             UserName = userName;

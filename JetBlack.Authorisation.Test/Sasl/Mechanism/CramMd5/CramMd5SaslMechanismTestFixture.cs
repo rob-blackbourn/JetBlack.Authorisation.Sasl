@@ -5,24 +5,15 @@ using NUnit.Framework;
 namespace JetBlack.Authorisation.Test.Sasl.Mechanism.CramMd5
 {
     [TestFixture]
-    public class CramMd5SaslMechanismTestFixture
+    public class CramMd5SaslMechanismTestFixture : SaslTextFixture
     {
         [Test]
         public void SmokeTest()
         {
-            const string username = "tim";
-            const string password = "tanstaaftanstaaf";
-            const string hostname = "postoffice.reston.mci.net";
-            var client = new CramMd5SaslClientMechanism(username, password);
-            var server = new CramMd5SaslServerMechanism(u => new UserInfo(u == username, username, u == username ? password : null), hostname);
+            var client = new CramMd5SaslClientMechanism(Username, Password);
+            var server = new CramMd5SaslServerMechanism(CheckUserInfo, Hostname);
 
-            var data = new byte[0];
-            while (!(client.IsCompleted && server.IsCompleted))
-            {
-                data = server.Continue(data);
-                if (data != null)
-                    data = client.Continue(data);
-            }
+            GenericTest(client, server);
 
             Assert.IsTrue(server.IsAuthenticated);
         }

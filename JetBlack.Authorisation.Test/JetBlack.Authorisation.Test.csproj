@@ -48,6 +48,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sasl\Mechanism\CramMd5\CramMd5SaslMechanismTestFixture.cs" />
     <Compile Include="Sasl\Mechanism\Plain\PlanSaslMechanismTestFixture.cs" />
+    <Compile Include="Sasl\SaslTextFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

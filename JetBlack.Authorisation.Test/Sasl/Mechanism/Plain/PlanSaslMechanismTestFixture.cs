@@ -4,28 +4,14 @@ using NUnit.Framework;
 namespace JetBlack.Authorisation.Test.Sasl.Mechanism.Plain
 {
     [TestFixture]
-    public class PlanSaslMechanismTestFixture
+    public class PlanSaslMechanismTestFixture : SaslTextFixture
     {
         [Test]
-        public void SmokeTest()
+        public void SmokeTest2()
         {
-            const string authorizationId = null;
-            const string username = "tim";
-            const string password = "tanstaaftanstaaf";
-            var client = new PlainSaslClientMechanism(authorizationId, username, password);
-            var server = new PlainSaslServerMechanism(
-                (_authorizationId, _username, _password) => 
-                    _username == username &&
-                    _password == password &&
-                    _authorizationId == authorizationId);
-
-            var data = new byte[0];
-            while (!client.IsCompleted && !server.IsCompleted)
-            {
-                data = client.Continue(data);
-                data = server.Continue(data);
-            }
-
+            var client = new PlainSaslClientMechanism(AuthorizationId, Username, Password);
+            var server = new PlainSaslServerMechanism(Authorise);
+            GenericTest(client, server);
             Assert.IsTrue(server.IsAuthenticated);
         }
     }
