@@ -1,6 +1,5 @@
 ﻿using JetBlack.Authorisation.Sasl.Mechanism.Plain;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace JetBlack.Authorisation.Test.Sasl.Mechanism.Plain
 {
@@ -10,10 +9,15 @@ namespace JetBlack.Authorisation.Test.Sasl.Mechanism.Plain
         [Test]
         public void SmokeTest()
         {
+            const string authorizationId = null;
             const string username = "tim";
             const string password = "tanstaaftanstaaf";
-            var client = new PlainSaslClientMechanism(null, username, password);
-            var server = new PlainSaslServerMechanism((_authorizationId, _username, _password) => _username == username && _password == password && _authorizationId == null);
+            var client = new PlainSaslClientMechanism(authorizationId, username, password);
+            var server = new PlainSaslServerMechanism(
+                (_authorizationId, _username, _password) => 
+                    _username == username &&
+                    _password == password &&
+                    _authorizationId == authorizationId);
 
             var data = new byte[0];
             while (!client.IsCompleted && !server.IsCompleted)
@@ -21,6 +25,8 @@ namespace JetBlack.Authorisation.Test.Sasl.Mechanism.Plain
                 data = client.Continue(data);
                 data = server.Continue(data);
             }
+
+            Assert.IsTrue(server.IsAuthenticated);
         }
     }
 }

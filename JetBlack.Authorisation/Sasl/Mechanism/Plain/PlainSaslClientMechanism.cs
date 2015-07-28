@@ -9,7 +9,6 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
     public class PlainSaslClientMechanism : PlainSaslMechanism, ISaslClientMechanism
     {
         private readonly string _authorizationId;
-        private readonly string _userName;
         private readonly string _password;
 
         private int _state;
@@ -30,7 +29,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
                 throw new ArgumentNullException("password");
 
             _authorizationId = authorizationId;
-            _userName = userName;
+            UserName = userName;
             _password = password;
         }
 
@@ -72,7 +71,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
                 ++_state;
                 IsCompleted = true;
 
-                return Encoding.UTF8.GetBytes(string.Concat(_authorizationId ?? string.Empty, '\0', _userName, '\0', _password));
+                return Encoding.UTF8.GetBytes(string.Concat(_authorizationId ?? string.Empty, '\0', UserName, '\0', _password));
             }
             
             throw new InvalidOperationException("Authentication is completed.");
@@ -86,10 +85,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public string UserName
-        {
-            get { return _userName; }
-        }
+        public string UserName { get; private set; }
 
         /// <summary>
         /// Gets if the authentication method supports SASL client "inital response".
