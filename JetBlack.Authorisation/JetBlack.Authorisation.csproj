@@ -52,6 +52,8 @@
     <Compile Include="Sasl\Mechanism\Plain\PlainSaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\XoAuth2\XoAuth2SaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\XoAuth\XoAuthSaslMechanism.cs" />
+    <Compile Include="Sasl\UserInfo.cs" />
+    <Compile Include="Sasl\UserInfoDelegate.cs" />
     <Compile Include="Sasl\UserInfoEventArgs.cs" />
     <Compile Include="Sasl\Mechanism\XoAuth\GmailOAuth1.cs" />
     <Compile Include="Sasl\Mechanism\DigestMd5\HttpDigest.cs" />

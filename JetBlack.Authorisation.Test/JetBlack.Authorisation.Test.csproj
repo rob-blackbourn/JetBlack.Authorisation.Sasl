@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sasl\Mechanism\CramMd5\CramMd5SaslMechanismTestFixture.cs" />
     <Compile Include="Sasl\Mechanism\Plain\PlanSaslMechanismTestFixture.cs" />
   </ItemGroup>
   <ItemGroup>
