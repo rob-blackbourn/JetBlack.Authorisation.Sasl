@@ -32,11 +32,6 @@ namespace JetBlack.Authorisation.Sasl
         bool IsAuthenticated { get; }
 
         /// <summary>
-        /// Gets if specified SASL mechanism is available only to SSL connection.
-        /// </summary>
-        bool RequireSsl { get; }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
         string UserName { get; }

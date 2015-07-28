@@ -383,5 +383,15 @@ namespace JetBlack.Authorisation.Utils
 
             return true;
         }
+
+        public static string NullIfEmpty(this string text)
+        {
+            return string.IsNullOrEmpty(text) ? null : text;
+        }
+
+        public static string NullIfWhitespace(this string text)
+        {
+            return string.IsNullOrWhiteSpace(text) ? null : text;
+        }
     }
 }

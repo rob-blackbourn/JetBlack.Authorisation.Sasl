@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using JetBlack.Authorisation.Utils;
 
 namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
 {
@@ -9,15 +10,18 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
     /// </summary>
     public class PlainSaslServerMechanism : PlainSaslMechanism, ISaslServerMechanism
     {
-        private string _userName = "";
+        private readonly AuthenticationDelegate _authenticationDelegate;
 
         /// <summary>
-        /// Default constructor.
+        /// PLan server mechanism Constructor.
         /// </summary>
-        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
-        public PlainSaslServerMechanism(bool requireSsl)
+        /// <param name="authenticationDelegate">Function called to authenticate user.</param>
+        public PlainSaslServerMechanism(AuthenticationDelegate authenticationDelegate)
         {
-            RequireSsl = requireSsl;
+            if (authenticationDelegate == null)
+                throw new ArgumentNullException("authenticationDelegate");
+
+            _authenticationDelegate = authenticationDelegate;
         }
 
         /// <summary>
@@ -27,7 +31,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
         {
             IsCompleted = false;
             IsAuthenticated = false;
-            _userName = "";
+            UserName = string.Empty;
         }
 
         /// <summary>
@@ -68,9 +72,9 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
             var parts = Encoding.UTF8.GetString(clientResponse).Split('\0');
             if (parts.Length == 3 && !string.IsNullOrEmpty(parts[1]))
             {
-                _userName = parts[1];
-                AuthenticateEventArgs result = OnAuthenticate(parts[0], parts[1], parts[2]);
-                IsAuthenticated = result.IsAuthenticated;
+                AuthorizationId = parts[0].NullIfWhitespace();
+                UserName = parts[1];
+                IsAuthenticated = _authenticationDelegate(AuthorizationId, UserName, parts[2].NullIfWhitespace());
             }
 
             IsCompleted = true;
@@ -88,44 +92,16 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
         /// </summary>
         public bool IsAuthenticated { get; private set; }
 
-        /// <summary>
-        /// Gets if specified SASL mechanism is available only to SSL connection.
-        /// </summary>
-        public bool RequireSsl { get; private set; }
+        public string AuthorizationId { get; private set; }
 
         /// <summary>
         /// Gets user login name.
         /// </summary>
-        public string UserName
-        {
-            get { return _userName; }
-        }
+        public string UserName { get; private set; }
 
         public Dictionary<string, object> Tags
         {
             get { return null; }
-        }
-
-        /// <summary>
-        /// Is called when authentication mechanism needs to authenticate specified user.
-        /// </summary>
-        public event EventHandler<AuthenticateEventArgs> Authenticate = null;
-
-        /// <summary>
-        /// Raises <b>Authenticate</b> event.
-        /// </summary>
-        /// <param name="authorizationId">Authorization ID.</param>
-        /// <param name="userName">User name.</param>
-        /// <param name="password">Password.</param>
-        /// <returns>Returns authentication result.</returns>
-        private AuthenticateEventArgs OnAuthenticate(string authorizationId, string userName, string password)
-        {
-            var retVal = new AuthenticateEventArgs(authorizationId, userName, password);
-
-            if (Authenticate != null)
-                Authenticate(this, retVal);
-
-            return retVal;
         }
     }
 }

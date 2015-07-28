@@ -8,26 +8,28 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
     /// </summary>
     public class PlainSaslClientMechanism : PlainSaslMechanism, ISaslClientMechanism
     {
+        private readonly string _authorizationId;
         private readonly string _userName;
         private readonly string _password;
 
-        private bool _isCompleted;
         private int _state;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
+        /// <param name="authorizationId"></param>
         /// <param name="userName">User login name.</param>
         /// <param name="password">User password.</param>
         /// <exception cref="ArgumentNullException">Is raised when <b>userName</b> or <b>password</b> is null reference.</exception>
         /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
-        public PlainSaslClientMechanism(string userName, string password)
+        public PlainSaslClientMechanism(string authorizationId, string userName, string password)
         {
             if (string.IsNullOrEmpty(userName))
                 throw new ArgumentException("Argument 'username' value must be specified.", "userName");
             if (password == null)
                 throw new ArgumentNullException("password");
 
+            _authorizationId = authorizationId;
             _userName = userName;
             _password = password;
         }
@@ -62,15 +64,15 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
         /// </remarks>
         public byte[] Continue(byte[] serverResponse)
         {
-            if (_isCompleted)
+            if (IsCompleted)
                 throw new InvalidOperationException("Authentication is completed.");
 
             if (_state == 0)
             {
                 ++_state;
-                _isCompleted = true;
+                IsCompleted = true;
 
-                return Encoding.UTF8.GetBytes(string.Concat('\0', _userName, '\0', _password));
+                return Encoding.UTF8.GetBytes(string.Concat(_authorizationId ?? string.Empty, '\0', _userName, '\0', _password));
             }
             
             throw new InvalidOperationException("Authentication is completed.");
@@ -79,10 +81,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Plain
         /// <summary>
         /// Gets if the authentication exchange has completed.
         /// </summary>
-        public bool IsCompleted
-        {
-            get { return _isCompleted; }
-        }
+        public bool IsCompleted { get; private set; }
 
         /// <summary>
         /// Gets user login name.
