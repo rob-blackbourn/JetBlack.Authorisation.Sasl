@@ -9,20 +9,13 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Login
     /// </summary>
     public class LoginSaslServerMechanism : LoginSaslMechanism, ISaslServerMechanism
     {
-        private bool _isCompleted;
-        private bool _isAuthenticated;
-        private readonly bool _requireSsl;
-        private string _userName;
+        private readonly AuthenticationDelegate _authenticationDelegate;
         private string _password;
         private int _state;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
-        public LoginSaslServerMechanism(bool requireSsl)
+        public LoginSaslServerMechanism(AuthenticationDelegate authenticationDelegate)
         {
-            _requireSsl = requireSsl;
+            _authenticationDelegate = authenticationDelegate;
         }
 
         /// <summary>
@@ -30,9 +23,9 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Login
         /// </summary>
         public void Reset()
         {
-            _isCompleted = false;
-            _isAuthenticated = false;
-            _userName = null;
+            IsCompleted = false;
+            IsAuthenticated = false;
+            UserName = null;
             _password = null;
             _state = 0;
         }
@@ -44,13 +37,6 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Login
         /// <returns>Returns challange response what must be sent to client or null if authentication has completed.</returns>
         /// <exception cref="ArgumentNullException">Is raised when <b>clientResponse</b> is null reference.</exception>
         /// <remarks>
-        /// RFC none.
-        ///    S: "Username:"
-        ///    C: userName
-        ///    S: "Password:"
-        ///    C: password
-        ///
-        /// NOTE: UserName may be included in initial client response.
         /// </remarks>
         public byte[] Continue(byte[] clientResponse)
         {
@@ -67,79 +53,28 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Login
 
                 return Encoding.ASCII.GetBytes("UserName:");
             }
-            else if (_state == 1)
+            
+            if (_state == 1)
             {
                 ++_state;
-                _userName = Encoding.UTF8.GetString(clientResponse);
+                UserName = Encoding.UTF8.GetString(clientResponse);
 
                 return Encoding.ASCII.GetBytes("Password:");
             }
-            else
+
+            if (_state == 3)
             {
                 _password = Encoding.UTF8.GetString(clientResponse);
-
-                AuthenticateEventArgs result = OnAuthenticate("", _userName, _password);
-                _isAuthenticated = result.IsAuthenticated;
-                _isCompleted = true;
+                IsAuthenticated = _authenticationDelegate(null, UserName, _password);
+                IsCompleted = true;
             }
 
             return null;
         }
 
-        /// <summary>
-        /// Gets if the authentication exchange has completed.
-        /// </summary>
-        public bool IsCompleted
-        {
-            get { return _isCompleted; }
-        }
-
-        /// <summary>
-        /// Gets if user has authenticated sucessfully.
-        /// </summary>
-        public bool IsAuthenticated
-        {
-            get { return _isAuthenticated; }
-        }
-
-        /// <summary>
-        /// Gets if specified SASL mechanism is available only to SSL connection.
-        /// </summary>
-        public bool RequireSsl
-        {
-            get { return _requireSsl; }
-        }
-
-        /// <summary>
-        /// Gets user login name.
-        /// </summary>
-        public string UserName
-        {
-            get { return _userName; }
-        }
-
+        public bool IsCompleted { get; private set; }
+        public bool IsAuthenticated { get; private set; }
+        public string UserName { get; private set; }
         public Dictionary<string, object> Tags { get { return null; } }
-
-        /// <summary>
-        /// Is called when authentication mechanism needs to authenticate specified user.
-        /// </summary>
-        public event EventHandler<AuthenticateEventArgs> Authenticate = null;
-
-        /// <summary>
-        /// Raises <b>Authenticate</b> event.
-        /// </summary>
-        /// <param name="authorizationId">Authorization ID.</param>
-        /// <param name="userName">User name.</param>
-        /// <param name="password">Password.</param>
-        /// <returns>Returns authentication result.</returns>
-        private AuthenticateEventArgs OnAuthenticate(string authorizationId, string userName, string password)
-        {
-            var retVal = new AuthenticateEventArgs(authorizationId, userName, password);
-
-            if (Authenticate != null)
-                Authenticate(this, retVal);
-
-            return retVal;
-        }
     }
 }
