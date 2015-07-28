@@ -62,7 +62,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.Login
                 return Encoding.ASCII.GetBytes("Password:");
             }
 
-            if (_state == 3)
+            if (_state == 2)
             {
                 _password = Encoding.UTF8.GetString(clientResponse);
                 IsAuthenticated = _authenticationDelegate(null, UserName, _password);
