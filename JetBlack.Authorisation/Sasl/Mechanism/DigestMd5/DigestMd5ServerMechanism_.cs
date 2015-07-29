@@ -4,30 +4,20 @@ using System.Text;
 
 namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
 {
-    /// <summary>
-    /// Implements "DIGEST-MD5" authenticaiton. Defined in RFC 2831.
-    /// </summary>
     public class DigestMd5SaslServerMechanism : DigestMd5SaslMechanism, ISaslServerMechanism
     {
-        private readonly bool _requireSsl;
+        private readonly UserInfoDelegate _userInfoDelegate;
         private string _realm = string.Empty;
         private readonly string _nonce;
         private string _userName = string.Empty;
         private int _state;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        /// <param name="requireSsl">Specifies if this mechanism is available to SSL connections only.</param>
-        public DigestMd5SaslServerMechanism(bool requireSsl)
+        public DigestMd5SaslServerMechanism(UserInfoDelegate userInfoDelegate)
         {
-            _requireSsl = requireSsl;
+            _userInfoDelegate = userInfoDelegate;
             _nonce = HttpDigest.CreateNonce();
         }
 
-        /// <summary>
-        /// Resets any authentication state data.
-        /// </summary>
         public void Reset()
         {
             IsCompleted = false;
@@ -36,36 +26,6 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
             _state = 0;
         }
 
-        /// <summary>
-        /// Continues authentication process.
-        /// </summary>
-        /// <param name="clientResponse">Client sent SASL response.</param>
-        /// <returns>Retunrns challange response what must be sent to client or null if authentication has completed.</returns>
-        /// <exception cref="ArgumentNullException">Is raised when <b>clientResponse</b> is null reference.</exception>
-        /// <remarks>
-        /// RFC 2831.
-        /// The base64-decoded version of the SASL exchange is:
-        ///
-        /// S: realm="elwood.innosoft.com",
-        ///    nonce="OA6MG9tEQGm2hh",
-        ///    qop="auth",
-        ///    algorithm=md5-sess,
-        ///    charset=utf-8
-        /// C: charset=utf-8,
-        ///    username="chris",
-        ///    realm="elwood.innosoft.com",
-        ///    nonce="OA6MG9tEQGm2hh",
-        ///    nc=00000001,
-        ///    cnonce="OA6MHXh6VqTrRk",
-        ///    digest-uri="imap/elwood.innosoft.com",
-        ///    response=d388dad90d4bbd760a152321f2143af7,
-        ///    qop=auth
-        /// S: rspauth=ea40f60335c427b5527b84dbabcdfffd
-        /// C: 
-        /// S: ok
-        ///
-        /// The password in this example was "secret".
-        /// </remarks>
         public byte[] Continue(byte[] clientResponse)
         {
             if (clientResponse == null)
@@ -92,14 +52,14 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
                         return Encoding.UTF8.GetBytes("rspauth=\"\"");
 
                     _userName = response.UserName;
-                    var result = OnGetUserInfo(response.UserName);
-                    if (result.UserExists)
+                    var userInfo = _userInfoDelegate(response.UserName);
+                    if (userInfo.UserExists)
                     {
-                        if (response.Authenticate(result.UserName, result.Password))
+                        if (response.Authenticate(userInfo.UserName, userInfo.Password))
                         {
                             IsAuthenticated = true;
 
-                            return Encoding.UTF8.GetBytes(response.ToRspauthResponse(result.UserName, result.Password));
+                            return Encoding.UTF8.GetBytes(response.ToRspauthResponse(userInfo.UserName, userInfo.Password));
                         }
                     }
                 }
@@ -118,28 +78,10 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
             return null;
         }
 
-        /// <summary>
-        /// Gets if the authentication exchange has completed.
-        /// </summary>
         public bool IsCompleted { get; private set; }
 
-        /// <summary>
-        /// Gets if user has authenticated sucessfully.
-        /// </summary>
         public bool IsAuthenticated { get; private set; }
 
-        /// <summary>
-        /// Gets if specified SASL mechanism is available only to SSL connection.
-        /// </summary>
-        public bool RequireSsl
-        {
-            get { return _requireSsl; }
-        }
-
-        /// <summary>
-        /// Gets or sets realm value.
-        /// </summary>
-        /// <remarks>Normally this is host or domain name.</remarks>
         public string Realm
         {
             get { return _realm; }
@@ -149,36 +91,11 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
             }
         }
 
-        /// <summary>
-        /// Gets user login name.
-        /// </summary>
         public string UserName
         {
             get { return _userName; }
         }
 
         public Dictionary<string, object> Tags { get { return null; } }
-
-        /// <summary>
-        /// Is called when authentication mechanism needs to get user info to complete atuhentication.
-        /// </summary>
-        public event EventHandler<UserInfoEventArgs> GetUserInfo = null;
-
-        /// <summary>
-        /// Raises <b>GetUserInfo</b> event.
-        /// </summary>
-        /// <param name="userName">User name.</param>
-        /// <returns>Returns specified user info.</returns>
-        private UserInfoEventArgs OnGetUserInfo(string userName)
-        {
-            UserInfoEventArgs retVal = new UserInfoEventArgs(userName);
-
-            if (this.GetUserInfo != null)
-            {
-                this.GetUserInfo(this, retVal);
-            }
-
-            return retVal;
-        }
     }
 }

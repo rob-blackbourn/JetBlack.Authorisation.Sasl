@@ -42,7 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Sasl\AuthenticateEventArgs.cs" />
     <Compile Include="Sasl\AuthenticationDelegate.cs" />
     <Compile Include="Sasl\ISaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\CramMd5\CramMd5SaslMechanism.cs" />

@@ -3,9 +3,6 @@ using System.Text;
 
 namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
 {
-    /// <summary>
-    /// Implements "DIGEST-MD5" authenticaiton.
-    /// </summary>
     public class DigestMd5SaslClientMechanism : DigestMd5SaslMechanism, ISaslClientMechanism
     {
         private readonly string _protocol;
@@ -15,15 +12,6 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
         private int _state;
         private DigestMd5Response _response;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        /// <param name="protocol">Protocol name. For example: SMTP.</param>
-        /// <param name="server">Remote server name or IP address.</param>
-        /// <param name="userName">User login name.</param>
-        /// <param name="password">User password.</param>
-        /// <exception cref="ArgumentNullException">Is raised when <b>protocol</b>,<b>server</b>,<b>userName</b> or <b>password</b> is null reference.</exception>
-        /// <exception cref="ArgumentException">Is raised when any of the arguments has invalid value.</exception>
         public DigestMd5SaslClientMechanism(string protocol, string server, string userName, string password)
         {
             if (protocol == null)
@@ -47,29 +35,6 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
             _password = password;
         }
 
-        /// <summary>
-        /// Continues authentication process.
-        /// </summary>
-        /// <param name="serverResponse">Server sent SASL response.</param>
-        /// <returns>Returns challange request what must be sent to server or null if authentication has completed.</returns>
-        /// <exception cref="ArgumentNullException">Is raised when <b>serverResponse</b> is null reference.</exception>
-        /// <exception cref="InvalidOperationException">Is raised when this method is called when authentication is completed.</exception>
-        /// <remarks>
-        /// RFC 2831.
-        /// The base64-decoded version of the SASL exchange is:
-        /// 
-        /// S: realm="elwood.innosoft.com",nonce="OA6MG9tEQGm2hh",qop="auth",
-        ///    algorithm=md5-sess,charset=utf-8
-        /// C: charset=utf-8,username="chris",realm="elwood.innosoft.com",
-        ///    nonce="OA6MG9tEQGm2hh",nc=00000001,cnonce="OA6MHXh6VqTrRk",
-        ///    digest-uri="imap/elwood.innosoft.com",
-        ///    response=d388dad90d4bbd760a152321f2143af7,qop=auth
-        /// S: rspauth=ea40f60335c427b5527b84dbabcdfffd
-        /// C: 
-        /// S: ok
-        /// 
-        /// The password in this example was "secret".
-        /// </remarks>
         public byte[] Continue(byte[] serverResponse)
         {
             if (serverResponse == null)
@@ -115,14 +80,8 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.DigestMd5
             }
         }
 
-        /// <summary>
-        /// Gets if the authentication exchange has completed.
-        /// </summary>
         public bool IsCompleted { get; private set; }
 
-        /// <summary>
-        /// Gets user login name.
-        /// </summary>
         public string UserName
         {
             get { return _userName; }

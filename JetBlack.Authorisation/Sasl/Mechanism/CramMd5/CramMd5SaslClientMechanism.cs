@@ -5,9 +5,6 @@ using JetBlack.Authorisation.Utils;
 
 namespace JetBlack.Authorisation.Sasl.Mechanism.CramMd5
 {
-    /// <summary>
-    /// Implements "CRAM-MD5" authenticaiton.
-    /// </summary>
     public class CramMd5SaslClientMechanism : CramMd5SaslMechanism, ISaslClientMechanism
     {
         private readonly string _password;

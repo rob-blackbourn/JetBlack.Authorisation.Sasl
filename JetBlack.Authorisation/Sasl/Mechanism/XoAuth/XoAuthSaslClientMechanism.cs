@@ -61,14 +61,6 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.XoAuth
         }
 
         /// <summary>
-        /// Returns always "LOGIN".
-        /// </summary>
-        public string Name
-        {
-            get { return "XOAUTH"; }
-        }
-
-        /// <summary>
         /// Gets user login name.
         /// </summary>
         public string UserName
