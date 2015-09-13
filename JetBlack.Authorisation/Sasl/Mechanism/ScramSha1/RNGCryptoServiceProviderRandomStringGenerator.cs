@@ -9,28 +9,18 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.ScramSha1
     {
         public string Generate(int length, string legalCharacters)
         {
-            var randomData = new byte[length];
+			var randomBytes = new byte[length];
             using (var rng = new RNGCryptoServiceProvider())
             {
-                rng.GetBytes(randomData);
+                rng.GetBytes(randomBytes);
             }
 
-            var randonCharacters = new char[length];
-            randomData.ForEach
+            var randomChars = new char[length];
+			randomBytes.ForEach ((b, i) => {
+				randomChars[i] = legalCharacters[b % legalCharacters.Length];
+			});
 
-            var sb = new StringBuilder(length);
-            for (var i = 0; i < length; ++i)
-            {
-                var pos = randomData[i] % legalCharacters.Length;
-                sb.Append(legalCharacters[pos]);
-            }
-
-            return sb.ToString();
+			return new string (randomChars);
         }
-    }
-
-    public static class LinqExtensions
-    {
-        
     }
 }

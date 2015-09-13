@@ -25,6 +25,7 @@ namespace JetBlack.Authorisation.Sasl.Mechanism.ScramSha1
 
         public byte[] Continue(byte[] serverResponse)
         {
+			throw new NotImplementedException ();
         }
 
         public bool IsCompleted { get; private set; }
