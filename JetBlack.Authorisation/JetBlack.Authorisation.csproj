@@ -49,6 +49,10 @@
     <Compile Include="Sasl\Mechanism\Login\LoginSaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\Ntlm\NtlmSaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\Plain\PlainSaslMechanism.cs" />
+    <Compile Include="Sasl\Mechanism\ScramSha1\IRandomStringGenerator.cs" />
+    <Compile Include="Sasl\Mechanism\ScramSha1\RNGCryptoServiceProviderRandomStringGenerator.cs" />
+    <Compile Include="Sasl\Mechanism\ScramSha1\ScarmSha1SaslClientMechanism.cs" />
+    <Compile Include="Sasl\Mechanism\ScramSha1\ScramSha1SaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\XoAuth2\XoAuth2SaslMechanism.cs" />
     <Compile Include="Sasl\Mechanism\XoAuth\XoAuthSaslMechanism.cs" />
     <Compile Include="Sasl\UserInfo.cs" />
